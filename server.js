@@ -1,12 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
+const path = require('path');
+const http = require('http');
+const WebSocket = require('ws');
+
 const app = express();
 const port = process.env.PORT || 3000;
-
 const apiKey = process.env.YOUTUBE_API_KEY; // Đặt API key trong biến môi trường
 
-app.use(express.static('public'));
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/search', async (req, res) => {
     const query = req.query.q;
@@ -20,6 +26,25 @@ app.get('/search', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.get('/apikey', (req, res) => {
+    res.json({ apiKey });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+wss.on('connection', (ws) => {
+    ws.on('message', (message) => {
+        // Broadcast the message to all clients
+        wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+});
+
+server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

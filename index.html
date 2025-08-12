@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shooting Egg Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Game Bắn Trứng Khủng Long</h1>
+        <div id="game-area">
+            <!-- Bubble shooter area -->
+            <canvas id="bubble-canvas" width="1200" height="1200"></canvas>
+            <div id="shooter">
+                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Dino" />
+                <div id="current-egg"></div>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="start-button">Bắt đầu</button>
+            <button id="restart-button" style="display: none;">Chơi lại</button>
+        </div>
+        <div id="score">
+            <p>Điểm: <span id="score-value">0</span></p>
+        </div>
+        <div id="guide">
+            <p>Kéo chuột để chọn hướng bắn, nhấn chuột để bắn trứng!</p>
+        </div>
+    </div>
+    <script type="module" src="./script.js"></script>
+</body>
+</html>

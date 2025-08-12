@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game - Coming Soon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" href="https://img.icons8.com/color/48/000000/snake.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/snake.png">
+    <meta name="theme-color" content="#2196f3">
+    <title>Snake Game</title>
     <style>
         body {
             display: flex;
@@ -40,13 +45,26 @@
         .back-button:hover {
             background: #1976d2;
         }
+
+        #snake-canvas {
+            background: #e0f7fa;
+            border: 2px solid #333;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
     <div class="coming-soon">
         <h1>Snake Game</h1>
         <p>This game is coming soon! Stay tuned for updates.</p>
+        <div style="text-align:center;margin:20px 0;">
+            <canvas id="snake-canvas" width="400" height="400"></canvas>
+            <br>
+            <button onclick="startSnakeGame()">Chơi ngay</button>
+        </div>
         <a href="../../index.html" class="back-button">Back to Hub</a>
     </div>
+    <script src="snake.js"></script>
 </body>
 </html>

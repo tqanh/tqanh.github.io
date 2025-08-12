@@ -161,6 +161,7 @@ function showModal(message) {
 }
 
 function endGame(win = false) {
+    if (!win && window.navigator && window.navigator.vibrate) window.navigator.vibrate(300);
     if (window.eggShooterSounds) window.eggShooterSounds.playSound(win ? 'win' : 'lose');
     isPlaying = false;
     if (moveDownInterval) clearInterval(moveDownInterval);

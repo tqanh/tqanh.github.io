@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" href="https://img.icons8.com/color/48/000000/memory-game.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/memory-game.png">
+    <meta name="theme-color" content="#2196f3">
     <title>Memory Cards - Coming Soon</title>
     <style>
         body {
@@ -40,13 +45,32 @@
         .back-button:hover {
             background: #1976d2;
         }
+
+        #memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 60px);
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        #memory-moves {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="coming-soon">
         <h1>Memory Cards Game</h1>
         <p>This game is coming soon! Stay tuned for updates.</p>
-        <a href="../../index.html" class="back-button">Back to Hub</a>
+        <div style="text-align:center;margin:20px 0;">
+            <div id="memory-board"></div>
+            <div id="memory-moves">Moves: 0</div>
+            <button onclick="startMemoryGame()">Chơi ngay</button>
+            <a href="../../index.html" class="back-button">Back to Hub</a>
+        </div>
     </div>
+    <script src="memory.js"></script>
 </body>
 </html>

@@ -316,9 +316,13 @@ function handlePointerMove(e) {
     const py = e.clientY || e.touches[0].clientY;
     const mx = px - rect.left;
     const my = py - rect.top;
+    // Tối ưu: cho phép góc sát mép trái/phải hơn
     let angle = Math.atan2(shooter.y - my, mx - shooter.x);
-    if (angle < Math.PI / 6) angle = Math.PI / 6;
-    if (angle > 5 * Math.PI / 6) angle = 5 * Math.PI / 6;
+    // Giới hạn góc: từ 0.1 đến Math.PI - 0.1 (gần sát mép)
+    const minAngle = 0.1;
+    const maxAngle = Math.PI - 0.1;
+    if (angle < minAngle) angle = minAngle;
+    if (angle > maxAngle) angle = maxAngle;
     shootAngle = angle;
     drawGrid();
     

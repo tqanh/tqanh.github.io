@@ -3,31 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shooting Egg Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Game Hub Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <div id="game-container">
-        <h1>Game Bắn Trứng Khủng Long</h1>
-        <div id="game-area">
-            <!-- Bubble shooter area -->
-            <canvas id="bubble-canvas" width="1200" height="1200"></canvas>
-            <div id="shooter">
-                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Dino" />
-                <div id="current-egg"></div>
+    <div class="hub-container">
+        <header class="hub-header">
+            <h1>Game Hub Collection</h1>
+            <p>Enjoy our collection of classic games!</p>
+        </header>
+
+        <div class="games-grid">
+            <!-- Egg Shooter Game -->
+            <div class="game-card">
+                <img src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Egg Shooter Game">
+                <h3>Egg Shooter</h3>
+                <p>Match and shoot colorful eggs in this addictive bubble shooter game!</p>
+                <button class="play-button" onclick="location.href='games/egg-shooter/index.html'">Play Now</button>
+            </div>
+
+            <!-- Snake Game -->
+            <div class="game-card">
+                <img src="https://img.icons8.com/color/48/000000/snake.png" alt="Snake Game">
+                <h3>Snake</h3>
+                <p>Classic snake game with modern graphics and multiple difficulty levels.</p>
+                <button class="play-button" onclick="location.href='games/snake/index.html'">Coming Soon</button>
+            </div>
+
+            <!-- Memory Cards -->
+            <div class="game-card">
+                <img src="https://img.icons8.com/color/48/000000/memory-game.png" alt="Memory Cards">
+                <h3>Memory Cards</h3>
+                <p>Test your memory by matching pairs of cards. Multiple themes available!</p>
+                <button class="play-button" onclick="location.href='games/memory/index.html'">Coming Soon</button>
             </div>
         </div>
-        <div id="controls">
-            <button id="start-button">Bắt đầu</button>
-            <button id="restart-button" style="display: none;">Chơi lại</button>
-        </div>
-        <div id="score">
-            <p>Điểm: <span id="score-value">0</span></p>
-        </div>
-        <div id="guide">
-            <p>Kéo chuột để chọn hướng bắn, nhấn chuột để bắn trứng!</p>
+
+        <!-- High Scores Section -->
+        <div class="high-scores">
+            <h2>High Scores</h2>
+            <ul class="score-list" id="highScores">
+                <!-- Scores will be populated by JavaScript -->
+            </ul>
         </div>
     </div>
-    <script type="module" src="./script.js"></script>
+
+    <script src="js/hub.js"></script>
 </body>
 </html>

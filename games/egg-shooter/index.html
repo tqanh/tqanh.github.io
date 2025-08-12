@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Egg Shooter Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Game Bắn Trứng Khủng Long</h1>
+        <div id="game-area">
+            <canvas id="bubble-canvas" width="600" height="800"></canvas>
+            <div id="shooter">
+                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Dino" />
+                <div id="current-egg"></div>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="start-button">Bắt đầu</button>
+            <button id="restart-button" style="display: none;">Chơi lại</button>
+            <button id="back-button" onclick="location.href='../../index.html'">Back to Hub</button>
+        </div>
+        <div id="score">
+            <p>Điểm: <span id="score-value">0</span></p>
+        </div>
+        <div id="guide">
+            <p>Kéo chuột/chạm để chọn hướng, nhấn/thả để bắn!</p>
+        </div>
+        <div id="sound-test" style="text-align:center;margin:10px 0;">
+            <button onclick="window.eggShooterSounds.playSound('shoot')">Test Shoot</button>
+            <button onclick="window.eggShooterSounds.playSound('explode')">Test Explode</button>
+            <button onclick="window.eggShooterSounds.playSound('win')">Test Win</button>
+            <button onclick="window.eggShooterSounds.playSound('lose')">Test Lose</button>
+        </div>
+    </div>
+    <script src="../../js/hub.js"></script>
+    <script src="sounds.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

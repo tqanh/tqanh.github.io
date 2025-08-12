@@ -7,14 +7,18 @@ const games = {
 
 // Load high scores from localStorage
 function loadHighScores() {
-    const savedScores = localStorage.getItem('gameHubScores');
-    if (savedScores) {
-        const scores = JSON.parse(savedScores);
-        Object.keys(scores).forEach(game => {
-            if (games[game]) {
-                games[game].maxScore = scores[game];
-            }
-        });
+    try {
+        const savedScores = localStorage.getItem('gameHubScores');
+        if (savedScores) {
+            const scores = JSON.parse(savedScores);
+            Object.keys(scores).forEach(game => {
+                if (games[game]) {
+                    games[game].maxScore = scores[game];
+                }
+            });
+        }
+    } catch (e) {
+        // ignore storage parse errors
     }
     updateHighScoresDisplay();
 }
@@ -22,8 +26,8 @@ function loadHighScores() {
 // Update high scores display
 function updateHighScoresDisplay() {
     const scoresList = document.getElementById('highScores');
+    if (!scoresList) return; // Not on hub page
     scoresList.innerHTML = '';
-    
     Object.keys(games).forEach(gameKey => {
         const game = games[gameKey];
         const li = document.createElement('li');
@@ -40,17 +44,27 @@ function saveHighScore(gameKey, score) {
             acc[key] = games[key].maxScore;
             return acc;
         }, {});
-        localStorage.setItem('gameHubScores', JSON.stringify(scores));
+        try {
+            localStorage.setItem('gameHubScores', JSON.stringify(scores));
+        } catch (e) {
+            // ignore quota errors
+        }
         updateHighScoresDisplay();
     }
 }
 
+function getHighScore(gameKey) {
+    return games[gameKey] ? games[gameKey].maxScore : 0;
+}
+
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHighScores();
+    });
+} else {
     loadHighScores();
-});
+}
 
 // Export for use in games
-window.gameHub = {
-    saveHighScore
-};
+window.gameHub = { saveHighScore, getHighScore };

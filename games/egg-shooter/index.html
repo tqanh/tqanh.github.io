@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -8,40 +8,155 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" href="https://img.icons8.com/color/48/000000/dinosaur.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/dinosaur.png">
-    <meta name="theme-color" content="#2196f3">
-    <title>Egg Shooter Game</title>
+    <meta name="theme-color" content="#667eea">
+    <title>🎮 Game Bắn Trứng Khủng Long - Cải tiến</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container" ontouchstart="" style="touch-action:manipulation;">
-        <h1>Game Bắn Trứng Khủng Long</h1>
+        <h1>🦖 Game Bắn Trứng Khủng Long</h1>
+        
         <div id="game-area">
             <canvas id="bubble-canvas" width="600" height="800"></canvas>
+            
+            <!-- Level Display -->
+            <div id="level-display">
+                <span id="level-label">Level</span>
+                <span id="level-value">1</span>
+            </div>
+            
+            <!-- Combo Display -->
+            <div id="combo-display">
+                <span id="combo-label">Combo</span>
+                <span id="combo-value">x1</span>
+            </div>
+            
             <div id="shooter">
-                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Dino" />
+                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Khủng Long" />
                 <div id="current-egg"></div>
             </div>
         </div>
+        
         <div id="controls">
-            <button id="start-button" style="font-size:1.2em;padding:12px 24px;">Bắt đầu</button>
-            <button id="restart-button" style="display: none;font-size:1.2em;padding:12px 24px;">Chơi lại</button>
-            <button id="back-button" onclick="location.href='../../index.html'" style="font-size:1.2em;padding:12px 24px;">Back to Hub</button>
+            <button id="start-button">🚀 Bắt đầu</button>
+            <button id="restart-button" style="display: none;">🔄 Chơi lại</button>
+            <button id="back-button" onclick="location.href='../../index.html'">🏠 Về Hub</button>
         </div>
+        
         <div id="score">
-            <p>Điểm: <span id="score-value">0</span></p>
+            <p>🏆 Điểm: <span id="score-value">0</span></p>
+            <p>🎯 Trứng phá hủy: <span id="eggs-destroyed">0</span></p>
+            <p>⭐ Bắn hoàn hảo: <span id="perfect-shots">0</span></p>
         </div>
+        
         <div id="guide">
-            <p>Kéo chuột/chạm để chọn hướng, nhấn/thả để bắn!</p>
+            <p>🎮 <strong>Điều khiển:</strong> Kéo chuột/chạm để nhắm, nhấn/thả để bắn!</p>
+            <p>⌨️ <strong>Bàn phím:</strong> Mũi tên để nhắm, Space để bắn, P để tạm dừng</p>
+            <p>📱 <strong>Mobile:</strong> Vuốt để điều khiển nhanh</p>
         </div>
+        
+        <div id="power-up-info">
+            <h3>💎 Power-ups:</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 15px 0;">
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #ff5722; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">💣</div>
+                    <small>Bom: Phá hủy 3x3</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #9c27b0; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">🌈</div>
+                    <small>Cầu vồng: Đổi màu tất cả</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #2196f3; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">❄️</div>
+                    <small>Đóng băng: Dừng thời gian</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #4caf50; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">⚡</div>
+                    <small>Tốc độ: Tăng tốc bắn</small>
+                </div>
+            </div>
+        </div>
+        
         <div id="sound-test" style="text-align:center;margin:10px 0;">
-            <button onclick="window.eggShooterSounds.playSound('shoot')">Test Shoot</button>
-            <button onclick="window.eggShooterSounds.playSound('explode')">Test Explode</button>
-            <button onclick="window.eggShooterSounds.playSound('win')">Test Win</button>
-            <button onclick="window.eggShooterSounds.playSound('lose')">Test Lose</button>
+            <h4>🔊 Test âm thanh:</h4>
+            <button onclick="window.eggShooterSounds.playSound('shoot')">🎯 Bắn</button>
+            <button onclick="window.eggShooterSounds.playSound('explode')">💥 Nổ</button>
+            <button onclick="window.eggShooterSounds.playSound('win')">🏆 Thắng</button>
+            <button onclick="window.eggShooterSounds.playSound('lose')">😔 Thua</button>
+        </div>
+        
+        <!-- High Score Display -->
+        <div id="high-score" style="display: none;">
+            <span id="high-score-label">🏆 Điểm cao nhất: </span>
+            <span id="high-score-value">0</span>
         </div>
     </div>
-    <script src="../../js/hub.js"></script>
-    <script src="sounds.js"></script>
-    <script src="script.js"></script>
+    
+    <script src="../../js/hub.js?v=20250813-1"></script>
+    <script src="sounds.js?v=20250813-1"></script>
+    <script src="script.js?v=20250813-1"></script>
+    
+    <script>
+        // Update level display
+        function updateLevelDisplay(level) {
+            const levelValue = document.getElementById('level-value');
+            if (levelValue) {
+                levelValue.textContent = level;
+            }
+        }
+        
+        // Update combo display
+        function updateComboDisplay(combo) {
+            const comboDisplay = document.getElementById('combo-display');
+            const comboValue = document.getElementById('combo-value');
+            if (comboDisplay && comboValue) {
+                comboValue.textContent = `x${combo}`;
+                if (combo > 1) {
+                    comboDisplay.classList.add('show');
+                } else {
+                    comboDisplay.classList.remove('show');
+                }
+            }
+        }
+        
+        // Update stats display
+        function updateStatsDisplay() {
+            const eggsDestroyed = document.getElementById('eggs-destroyed');
+            const perfectShots = document.getElementById('perfect-shots');
+            if (eggsDestroyed && window.gameStats) {
+                eggsDestroyed.textContent = window.gameStats.eggsDestroyed || 0;
+            }
+            if (perfectShots && window.gameStats) {
+                perfectShots.textContent = window.gameStats.perfectShots || 0;
+            }
+        }
+        
+        // Check for high score
+        function checkHighScore() {
+            if (window.gameHub && window.gameHub.getHighScore) {
+                const highScore = window.gameHub.getHighScore('egg-shooter');
+                if (highScore > 0) {
+                    const highScoreDiv = document.getElementById('high-score');
+                    const highScoreValue = document.getElementById('high-score-value');
+                    if (highScoreDiv && highScoreValue) {
+                        highScoreValue.textContent = highScore;
+                        highScoreDiv.style.display = 'block';
+                    }
+                }
+            }
+        }
+        
+        // Initialize displays
+        document.addEventListener('DOMContentLoaded', function() {
+            checkHighScore();
+            
+            // Update displays every 100ms
+            setInterval(() => {
+                if (window.level) updateLevelDisplay(window.level);
+                if (window.combo) updateComboDisplay(window.combo);
+                updateStatsDisplay();
+            }, 100);
+        });
+    </script>
 </body>
 </html>

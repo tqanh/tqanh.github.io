@@ -87,18 +87,74 @@ async function getLeaderboard(gameKey) {
 	return boards[gameKey] || [];
 }
 
-function loadHighScores() { ensureInit(); updateUserControls(); updateHighScoresDisplay(); updateLeaderboards(); }
+function loadHighScores() { 
+	ensureInit(); 
+	updateUserControls(); 
+	// Only update high scores display if the element exists
+	const scoresList = document.getElementById('highScores');
+	if (scoresList) {
+		updateHighScoresDisplay(); 
+	}
+	updateLeaderboards(); 
+}
 function updateUserControls() {
-	const select = document.getElementById('userSelect'); const addBtn = document.getElementById('addUserBtn'); if (!select) return;
-	const users = listUsers(); const current = getCurrentUser(); select.innerHTML = '';
-	users.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.textContent = u; if (u === current) opt.selected = true; select.appendChild(opt); });
+	const select = document.getElementById('userSelect'); 
+	const addBtn = document.getElementById('addUserBtn'); 
+	
+	// Early return if elements don't exist
+	if (!select) return;
+	
+	const users = listUsers(); 
+	const current = getCurrentUser(); 
+	select.innerHTML = '';
+	
+	users.forEach(u => { 
+		const opt = document.createElement('option'); 
+		opt.value = u; 
+		opt.textContent = u; 
+		if (u === current) opt.selected = true; 
+		select.appendChild(opt); 
+	});
+	
 	select.onchange = () => setCurrentUser(select.value);
-	if (addBtn) addBtn.onclick = () => { const name = prompt('Tên người dùng mới?', 'Player ' + (users.length + 1)); if (name && name.trim()) setCurrentUser(name.trim()); };
+	
+	if (addBtn) {
+		addBtn.onclick = () => {
+			const input = document.getElementById('newUserName');
+			let name = (input && input.value ? input.value : '').trim();
+			// Sanitize: 1-20 ký tự, chữ-số-khoảng-trắng-gạch
+			name = name.replace(/[^\w\s-]/g, '').slice(0, 20);
+			if (!name) { alert('Nhập tên (1-20 ký tự).'); return; }
+			setCurrentUser(name);
+			if (input) input.value = '';
+		};
+	}
 }
 function updateHighScoresDisplay() {
 	const scoresList = document.getElementById('highScores'); if (!scoresList) return;
 	scoresList.innerHTML = '';
-	const user = getCurrentUser(); const scores = readJSON('gh_scores', {}); const userScores = scores[user] || { 'egg-shooter': 0, 'snake': 0, 'memory': 0 };
+	// If remote leaderboard is enabled, show global top-1 per game
+	if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
+		(async () => {
+			for (const gameKey of Object.keys(DEFAULT_GAMES)) {
+				let best = 0;
+				try {
+					const top = await window.remoteLeaderboard.list(gameKey, 1);
+					if (Array.isArray(top) && top[0]) best = top[0].score || 0;
+				} catch {}
+				const li = document.createElement('li');
+				li.textContent = `${DEFAULT_GAMES[gameKey].name}: ${best}`;
+				scoresList.appendChild(li);
+			}
+		})();
+		const currentUserLabel = document.getElementById('currentUserLabel');
+		if (currentUserLabel) currentUserLabel.textContent = '(remote)';
+		return;
+	}
+	// Local fallback (no remote configured)
+	const user = getCurrentUser();
+	const scores = readJSON('gh_scores', {});
+	const userScores = scores[user] || { 'egg-shooter': 0, 'snake': 0, 'memory': 0 };
 	Object.keys(DEFAULT_GAMES).forEach(gameKey => { const li = document.createElement('li'); li.textContent = `${DEFAULT_GAMES[gameKey].name}: ${userScores[gameKey] || 0}`; scoresList.appendChild(li); });
 	const currentUserLabel = document.getElementById('currentUserLabel'); if (currentUserLabel) currentUserLabel.textContent = user;
 }

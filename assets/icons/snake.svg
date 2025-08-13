@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+	<defs>
+		<linearGradient id="snakeGrad" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#4caf50"/>
+			<stop offset="1" stop-color="#2e7d32"/>
+		</linearGradient>
+		<linearGradient id="eyeGrad" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#ffffff"/>
+			<stop offset="1" stop-color="#e0e0e0"/>
+		</linearGradient>
+	</defs>
+	
+	<!-- Background -->
+	<rect width="128" height="128" rx="16" fill="#e8f5e8"/>
+	
+	<!-- Snake body segments -->
+	<g transform="translate(20, 20)">
+		<!-- Head -->
+		<ellipse cx="25" cy="25" rx="20" ry="18" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		
+		<!-- Eyes -->
+		<circle cx="18" cy="20" r="4" fill="url(#eyeGrad)"/>
+		<circle cx="32" cy="20" r="4" fill="url(#eyeGrad)"/>
+		<circle cx="18" cy="20" r="2" fill="#000"/>
+		<circle cx="32" cy="20" r="2" fill="#000"/>
+		
+		<!-- Body segments -->
+		<ellipse cx="45" cy="25" rx="15" ry="12" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		<ellipse cx="60" cy="25" rx="12" ry="10" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		<ellipse cx="72" cy="25" rx="10" ry="8" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		
+		<!-- Tail -->
+		<ellipse cx="82" cy="25" rx="8" ry="6" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		<ellipse cx="90" cy="25" rx="6" ry="4" fill="url(#snakeGrad)" stroke="#1b5e20" stroke-width="2"/>
+		
+		<!-- Food -->
+		<circle cx="70" cy="45" r="8" fill="#ff9800" stroke="#e65100" stroke-width="2"/>
+		<circle cx="70" cy="45" r="4" fill="#fff"/>
+	</g>
+</svg>

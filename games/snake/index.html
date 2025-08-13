@@ -19,47 +19,20 @@
             background: #f0f0f0;
             font-family: 'Roboto', sans-serif;
         }
-        
-        .coming-soon {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        h1 {
-            color: #2196f3;
-            margin-bottom: 20px;
-        }
-        
-        .back-button {
-            padding: 10px 20px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        
-        .back-button:hover {
-            background: #1976d2;
-        }
-
-        #snake-canvas {
-            background: #e0f7fa;
-            border: 2px solid #333;
-            display: block;
-            margin: 0 auto;
-        }
+        .coming-soon { text-align: center; padding: 20px; }
+        h1 { color: #2196f3; margin-bottom: 10px; }
+        #snake-canvas { background: #e0f7fa; border: 2px solid #333; display: block; margin: 0 auto; touch-action: none; user-select: none; }
+        .hint { color: #555; font-size: 14px; margin-top: 10px; }
+        .back-button { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
+        .back-button:hover { background: #1976d2; }
     </style>
 </head>
 <body>
     <div class="coming-soon" ontouchstart="" style="touch-action:manipulation;">
         <h1>Snake Game</h1>
-        <p>This game is coming soon! Stay tuned for updates.</p>
         <div style="text-align:center;margin:20px 0;">
             <canvas id="snake-canvas" width="400" height="400"></canvas>
+            <div class="hint">Desktop: phím mũi tên để di chuyển, Space để bắt đầu, P tạm dừng. Mobile: vuốt để điều khiển.</div>
             <br>
             <button onclick="startSnakeGame()">Chơi ngay</button>
         </div>

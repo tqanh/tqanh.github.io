@@ -10,68 +10,144 @@
 	<meta name="theme-color" content="#2196f3">
 	<title>Memory Cards</title>
 	<style>
+		:root { --card-max: 560px; }
 		body {
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			height: 100vh;
+			height: 100dvh;
+			min-height: 100vh;
 			margin: 0;
-			background: #f0f0f0;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			font-family: 'Roboto', sans-serif;
 		}
-		.coming-soon {
+		.container { width: 100%; display: flex; justify-content: center; padding: 12px; box-sizing: border-box; }
+		.card {
+			width: min(95vw, var(--card-max));
+			background: rgba(255,255,255,0.15);
+			border-radius: 18px;
+			box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+			padding: 18px 18px 22px;
+			box-sizing: border-box;
 			text-align: center;
-			padding: 20px;
+			backdrop-filter: blur(8px);
+			border: 1px solid rgba(255,255,255,0.25);
 		}
-		h1 { color: #2196f3; margin-bottom: 10px; }
+		h1 {
+			margin: 8px 0 12px;
+			font-size: 30px;
+			background: linear-gradient(45deg, #ffd700, #ffed4e);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			text-shadow: 0 0 10px rgba(255,215,0,0.4);
+		}
+		.board { position: relative; display: inline-block; }
+		/* Responsive grid board */
 		#memory-board {
 			display: grid;
-			grid-template-columns: repeat(4, 70px);
+			grid-template-columns: repeat(4, 1fr);
 			gap: 12px;
 			justify-content: center;
-			margin-bottom: 10px;
+			margin: 0 auto;
+			background: #e3f2fd;
+			border: 3px solid #1976d2;
+			border-radius: 14px;
+			padding: 14px;
+			box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+			max-width: 420px;
 		}
 		.memory-card {
-			width: 70px;
-			height: 70px;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			background: #90caf9;
-			border-radius: 10px;
-			box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-			font-size: 34px;
+			border-radius: 12px;
+			box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+			font-size: clamp(20px, 7vw, 36px);
 			cursor: pointer;
 			user-select: none;
 			-webkit-user-select: none;
 			touch-action: manipulation;
-			transition: transform 0.12s ease, background 0.2s ease;
+			transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+			aspect-ratio: 1 / 1;
 		}
 		.memory-card:active { transform: scale(0.97); }
 		.memory-card.hidden { background: #bdbdbd; color: transparent; }
-		#memory-moves { font-size: 18px; margin-bottom: 10px; }
-		.hint { color: #666; font-size: 14px; margin-bottom: 10px; }
-		.back-button { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 12px; }
-		.back-button:hover { background: #1976d2; }
-		button { padding: 10px 16px; border: none; background: #4caf50; color: #fff; border-radius: 6px; cursor: pointer; }
-		button:hover { background: #43a047; }
+		/* HUD badges */
+		.hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
+		.badge {
+			pointer-events: none;
+			background: rgba(255,255,255,0.9);
+			color: #333;
+			padding: 8px 12px;
+			border-radius: 20px;
+			font-weight: 700;
+			font-size: 14px;
+			box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+			border: 1px solid rgba(0,0,0,0.05);
+		}
+		.hint { color: #f3f3f3; font-size: 14px; margin-top: 12px; }
+		.actions { margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+		button, .back-button { padding: 12px 22px; border: none; border-radius: 28px; cursor: pointer; font-weight: 700; }
+		button {
+			background: linear-gradient(45deg, #4CAF50, #45a049);
+			color: #fff;
+			box-shadow: 0 6px 18px rgba(76,175,80,0.4);
+			transition: transform 0.12s ease, filter 0.2s ease;
+		}
+		button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+		.back-button {
+			background: linear-gradient(45deg, #2196F3, #1976D2);
+			color: #fff; text-decoration: none; display: inline-block;
+			box-shadow: 0 6px 18px rgba(25,118,210,0.4);
+		}
+		/* High score badge */
+		#high-score {
+			margin: 14px auto 0;
+			max-width: 360px;
+			background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+			color: #ffd700;
+			border: 2px solid #ffd700;
+			border-radius: 12px;
+			padding: 8px 14px;
+			font-weight: 700;
+			box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+			display: block;
+		}
 		@media (max-width: 480px) {
-			#memory-board { grid-template-columns: repeat(4, 60px); gap: 10px; }
-			.memory-card { width: 60px; height: 60px; font-size: 28px; }
+			#memory-board { gap: 10px; padding: 10px; max-width: 92vw; }
 		}
 	</style>
 </head>
 <body>
-	<div class="coming-soon" ontouchstart="" style="touch-action:manipulation;">
-		<h1>Memory Cards Game</h1>
-		<p class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</p>
-		<div style="text-align:center;margin:20px 0;">
-			<div id="memory-board"></div>
-			<div id="memory-moves">Moves: 0</div>
-			<button onclick="startMemoryGame()">Chơi ngay</button>
-			<a href="../../index.html" class="back-button">Back to Hub</a>
+	<div class="container">
+		<div class="card" ontouchstart="" style="touch-action:manipulation;">
+			<h1>Memory Cards Game</h1>
+			<div class="board">
+				<div class="hud">
+					<div class="badge" id="moves-badge">Moves: <span id="moves-text">0</span></div>
+					<div class="badge">Good luck!</div>
+				</div>
+				<div id="memory-board"></div>
+			</div>
+			<div class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</div>
+			<div class="actions">
+				<button onclick="startMemoryGame()">Chơi ngay</button>
+				<a href="../../index.html" class="back-button">Back to Hub</a>
+			</div>
+			<div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
 		</div>
 	</div>
 	<script src="memory.js"></script>
+	<script>
+		(function(){
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function(){ if (window.updateMemoryHighScore) window.updateMemoryHighScore(); });
+			} else {
+				if (window.updateMemoryHighScore) window.updateMemoryHighScore();
+			}
+		})();
+	</script>
 </body>
 </html>

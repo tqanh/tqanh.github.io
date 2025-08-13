@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#2196f3">
     <title>Snake Game</title>
     <style>
-        :root { --card-max: 520px; }
+        :root { --card-max: 560px; }
         body {
             display: flex;
             justify-content: center;
@@ -18,46 +18,112 @@
             height: 100dvh;
             min-height: 100vh;
             margin: 0;
-            background: #f0f0f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Roboto', sans-serif;
         }
-        .container { width: 100%; display: flex; justify-content: center; }
+        .container { width: 100%; display: flex; justify-content: center; padding: 12px; box-sizing: border-box; }
         .card {
             width: min(95vw, var(--card-max));
-            background: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            padding: 16px 16px 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+            padding: 18px 18px 22px;
             box-sizing: border-box;
             text-align: center;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.25);
         }
-        h1 { color: #2196f3; margin: 8px 0 12px; font-size: 28px; }
+        h1 {
+            margin: 8px 0 12px;
+            font-size: 30px;
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 10px rgba(255,215,0,0.4);
+        }
+        .board { position: relative; display: inline-block; }
         #snake-canvas {
-            background: #e0f7fa; border: 2px solid #333; border-radius: 10px; display: block; margin: 0 auto;
+            background: #e0f7fa;
+            border: 3px solid #1976d2;
+            border-radius: 14px;
+            display: block;
+            margin: 0 auto;
             touch-action: none; user-select: none;
-            max-width: 100%; max-height: calc(100dvh - 260px);
+            max-width: 100%; max-height: calc(100dvh - 300px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.25);
         }
-        .hint { color: #555; font-size: 14px; margin-top: 10px; }
-        .actions { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        button, .back-button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; }
-        button { background: #4caf50; color: #fff; }
-        button:hover { background: #43a047; }
-        .back-button { background: #2196f3; color: #fff; text-decoration: none; display: inline-block; }
-        .back-button:hover { background: #1976d2; }
+        .hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; pointer-events: none; }
+        .badge {
+            pointer-events: none;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .hint { color: #f3f3f3; font-size: 14px; margin-top: 12px; }
+        .actions { margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        button, .back-button { padding: 12px 22px; border: none; border-radius: 28px; cursor: pointer; font-weight: 700; }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(76,175,80,0.4);
+            transition: transform 0.12s ease, filter 0.2s ease;
+        }
+        button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+        .back-button {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: #fff; text-decoration: none; display: inline-block;
+            box-shadow: 0 6px 18px rgba(25,118,210,0.4);
+        }
+        /* High score badge */
+        #high-score {
+            margin: 14px auto 0;
+            max-width: 420px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            border-radius: 14px;
+            padding: 10px 16px;
+            font-weight: 700;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card" ontouchstart="" style="touch-action:manipulation;">
             <h1>Snake Game</h1>
-            <canvas id="snake-canvas" width="400" height="400"></canvas>
+            <div class="board">
+                <div class="hud">
+                    <div id="score-badge" class="badge">Score: <span id="score-text">0</span></div>
+                    <div id="state-badge" class="badge" style="opacity:.9;">Ready</div>
+                </div>
+                <canvas id="snake-canvas" width="400" height="400"></canvas>
+            </div>
             <div class="hint">Desktop: phím mũi tên để di chuyển, Space để bắt đầu, P tạm dừng. Mobile: vuốt để điều khiển.</div>
             <div class="actions">
                 <button onclick="startSnakeGame()">Chơi ngay</button>
                 <a href="../../index.html" class="back-button">Back to Hub</a>
             </div>
+            <div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
         </div>
     </div>
     <script src="snake.js"></script>
+    <script>
+        // Update snake high score display on load
+        (function(){
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateSnakeHighScore);
+            } else {
+                updateSnakeHighScore();
+            }
+        })();
+    </script>
 </body>
 </html>

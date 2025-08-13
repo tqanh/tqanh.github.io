@@ -71,12 +71,11 @@ function draw() {
 	ctx.beginPath();
 	ctx.arc(food.x*box+box/2, food.y*box+box/2, box/2, 0, 2*Math.PI);
 	ctx.fill();
-	// Draw score & state
-	ctx.fillStyle = '#333';
-	ctx.font = '20px Roboto';
-	ctx.fillText('Score: ' + score, 10, 30);
-	if (!isPlaying) ctx.fillText('Press Space/Tap to Start', 10, rows*box - 10);
-	if (isPaused) ctx.fillText('Paused (P)', cols*box - 120, 30);
+	// Update HUD
+	const scoreEl = document.getElementById('score-text');
+	if (scoreEl) scoreEl.textContent = String(score);
+	const stateEl = document.getElementById('state-badge');
+	if (stateEl) stateEl.textContent = isPlaying ? (isPaused ? 'Paused' : 'Playing') : 'Ready';
 }
 
 function playBeep(freq = 520, dur = 0.05) {
@@ -148,7 +147,7 @@ document.addEventListener('keydown', e => {
 	if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
 	if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
 	if (e.code === 'Space') { if (!isPlaying) startSnakeGame(); }
-	if (e.code === 'KeyP') { if (isPlaying) isPaused = !isPaused; }
+	if (e.code === 'KeyP') { if (isPlaying) { isPaused = !isPaused; draw(); } }
 });
 
 let touchStartX = 0, touchStartY = 0;
@@ -171,6 +170,20 @@ canvas.addEventListener('touchend', function(e) {
 	if (!isPlaying) startSnakeGame();
 });
 
+function updateSnakeHighScore() {
+	try {
+		if (window.gameHub && window.gameHub.getHighScore) {
+			const hs = window.gameHub.getHighScore('snake');
+			const wrap = document.getElementById('high-score');
+			const val = document.getElementById('high-score-value');
+			if (wrap && val && typeof hs === 'number') {
+				val.textContent = String(hs);
+				wrap.style.display = hs > 0 ? 'block' : 'none';
+			}
+		}
+	} catch {}
+}
+
 function startSnakeGame(speedMs) {
 	if (typeof speedMs === 'number' && speedMs > 40) baseStepMs = speedMs;
 	snake = [{x: 10, y: 10}];
@@ -183,13 +196,14 @@ function startSnakeGame(speedMs) {
 	accumulatorMs = 0;
 	stepMs = baseStepMs;
 	draw();
+	updateSnakeHighScore();
 }
 
 function showSnakeModal(msg) {
 	if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(300);
-	// Save high score to hub
 	if (window.gameHub && window.gameHub.saveHighScore) {
 		window.gameHub.saveHighScore('snake', score);
+		updateSnakeHighScore();
 	}
 	let modal = document.getElementById('snake-modal');
 	if (!modal) {
@@ -205,10 +219,32 @@ function showSnakeModal(msg) {
 		modal.style.justifyContent = 'center';
 		modal.style.alignItems = 'center';
 		modal.style.zIndex = '9999';
-		modal.innerHTML = `<div style=\"background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;\">\n\t\t\t<span id=\\"snake-modal-message\\"></span><br><br>\n\t\t\t<button onclick=\\"document.getElementById('snake-modal').remove();startSnakeGame(baseStepMs);\\">Chơi lại</button>\n\t\t\t<button onclick=\\"location.href='../../index.html'\\">Back to Hub</button>\n\t\t</div>`;
 		document.body.appendChild(modal);
 	}
-	document.getElementById('snake-modal-message').textContent = msg;
+	// Build content programmatically (tránh inline handler)
+	const content = document.createElement('div');
+	content.style.cssText = 'background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;';
+	const msgEl = document.createElement('span');
+	msgEl.id = 'snake-modal-message';
+	msgEl.textContent = msg;
+	const actions = document.createElement('div');
+	actions.style.cssText = 'margin-top:16px;display:flex;gap:10px;justify-content:center;';
+	const retry = document.createElement('button');
+	retry.textContent = 'Chơi lại';
+	retry.style.cssText = 'padding:8px 12px;';
+	retry.addEventListener('click', () => { modal.remove(); startSnakeGame(); });
+	const back = document.createElement('button');
+	back.textContent = 'Back to Hub';
+	back.style.cssText = 'padding:8px 12px;';
+	back.addEventListener('click', () => { location.href='../../index.html'; });
+	actions.appendChild(retry);
+	actions.appendChild(back);
+	content.appendChild(msgEl);
+	content.appendChild(document.createElement('br'));
+	content.appendChild(document.createElement('br'));
+	content.appendChild(actions);
+	modal.innerHTML = '';
+	modal.appendChild(content);
 	modal.style.display = 'flex';
 }
 

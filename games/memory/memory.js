@@ -13,6 +13,16 @@ function shuffle(array) {
 	}
 }
 
+function updateMemoryHighScore() {
+	try {
+		if (window.gameHub && window.gameHub.getHighScore) {
+			const hs = window.gameHub.getHighScore('memory');
+			const el = document.getElementById('high-score-value');
+			if (el && typeof hs === 'number') el.textContent = String(hs);
+		}
+	} catch {}
+}
+
 function startMemoryGame() {
 	deck = [...cards, ...cards];
 	shuffle(deck);
@@ -22,6 +32,7 @@ function startMemoryGame() {
 	isPlaying = true;
 	lockBoard = false;
 	renderMemory();
+	updateMemoryHighScore();
 }
 
 function renderMemory() {
@@ -39,6 +50,8 @@ function renderMemory() {
 	});
 	const movesEl = document.getElementById('memory-moves');
 	if (movesEl) movesEl.textContent = 'Moves: ' + moves;
+	const badge = document.getElementById('moves-text');
+	if (badge) badge.textContent = String(moves);
 }
 
 function flipCard(idx) {
@@ -67,10 +80,10 @@ function flipCard(idx) {
 function finishMemory() {
 	isPlaying = false;
 	if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(200);
-	// Save high score as minimal moves
 	if (window.gameHub && window.gameHub.saveHighScore) {
 		const score = Math.max(1, (cards.length * 2 * 2) - moves); // higher is better
 		window.gameHub.saveHighScore('memory', score);
+		updateMemoryHighScore();
 	}
 	showMemoryModal('You win! Moves: ' + moves);
 }
@@ -110,3 +123,4 @@ if (document.readyState === 'loading') {
 
 // Expose
 window.startMemoryGame = startMemoryGame;
+window.updateMemoryHighScore = updateMemoryHighScore;

@@ -80,6 +80,15 @@
             color: #fff; text-decoration: none; display: inline-block;
             box-shadow: 0 6px 18px rgba(25,118,210,0.4);
         }
+        .leaderboard-btn {
+            background: linear-gradient(45deg, #FFD700, #FFC107);
+            color: #333;
+            box-shadow: 0 6px 18px rgba(255,215,0,0.4);
+        }
+        .leaderboard-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
         /* High score badge */
         #high-score {
             margin: 14px auto 0;
@@ -109,6 +118,7 @@
             <div class="hint">Desktop: phím mũi tên để di chuyển, Space để bắt đầu, P tạm dừng. Mobile: vuốt để điều khiển.</div>
             <div class="actions">
                 <button onclick="startSnakeGame()">Chơi ngay</button>
+                <button onclick="showSnakeLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
                 <a href="../../index.html" class="back-button">Back to Hub</a>
             </div>
             <div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
@@ -117,16 +127,71 @@
     <script src="snake.js"></script>
     <script src="../../js/config.js"></script>
     <script src="../../js/remoteLeaderboard.js"></script>
+    <script src="../../js/hub.js"></script>
     <script src="../../js/auth-guard.js"></script>
     <script>
-        // Update snake high score display on load
-        (function(){
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', updateSnakeHighScore);
-            } else {
-                updateSnakeHighScore();
+        // Wait for all scripts to load
+        window.addEventListener('load', function() {
+            // Ensure gameHub is initialized
+            if (window.gameHub && window.gameHub.ensureInit) {
+                window.gameHub.ensureInit();
             }
-        })();
+            
+            // Update snake high score display on load
+            updateSnakeHighScore();
+        });
+        
+        // Leaderboard function for Snake
+        function showSnakeLeaderboard() {
+            try {
+                if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
+                    // Try to get remote leaderboard
+                    window.remoteLeaderboard.list('snake', 10).then(scores => {
+                        let message = '🏆 Top 10 - Snake\n\n';
+                        
+                        if (scores && scores.length > 0) {
+                            scores.forEach((score, index) => {
+                                message += `${index + 1}. ${score.user}: ${score.score}\n`;
+                            });
+                        } else {
+                            message += 'Chưa có điểm số nào.';
+                        }
+                        
+                        alert(message);
+                    }).catch(error => {
+                        showSnakeLocalLeaderboard();
+                    });
+                } else {
+                    showSnakeLocalLeaderboard();
+                }
+            } catch (error) {
+                showSnakeLocalLeaderboard();
+            }
+        }
+        
+        function showSnakeLocalLeaderboard() {
+            try {
+                if (window.gameHub && window.gameHub.getLeaderboard) {
+                    window.gameHub.getLeaderboard('snake').then(scores => {
+                        let message = '🏆 Top 10 - Snake (Local)\n\n';
+                        
+                        if (scores && scores.length > 0) {
+                            scores.forEach((score, index) => {
+                                message += `${index + 1}. ${score.name}: ${score.score}\n`;
+                            });
+                        } else {
+                            message += 'Chưa có điểm số nào.';
+                        }
+                        
+                        alert(message);
+                    });
+                } else {
+                    alert('Leaderboard chưa khả dụng.');
+                }
+            } catch (error) {
+                alert('Không thể hiển thị leaderboard: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>

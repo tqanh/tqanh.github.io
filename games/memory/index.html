@@ -102,6 +102,15 @@
 			color: #fff; text-decoration: none; display: inline-block;
 			box-shadow: 0 6px 18px rgba(25,118,210,0.4);
 		}
+		.leaderboard-btn {
+			background: linear-gradient(45deg, #FFD700, #FFC107);
+			color: #333;
+			box-shadow: 0 6px 18px rgba(255,215,0,0.4);
+		}
+		.leaderboard-btn:hover {
+			transform: translateY(-1px);
+			filter: brightness(1.05);
+		}
 		/* High score badge */
 		#high-score {
 			margin: 14px auto 0;
@@ -134,6 +143,7 @@
 			<div class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</div>
 			<div class="actions">
 				<button onclick="startMemoryGame()">Chơi ngay</button>
+				<button onclick="showMemoryLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
 				<a href="../../index.html" class="back-button">Back to Hub</a>
 			</div>
 			<div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
@@ -142,15 +152,71 @@
 	<script src="memory.js"></script>
 	<script src="../../js/config.js"></script>
 	<script src="../../js/remoteLeaderboard.js"></script>
+	<script src="../../js/hub.js"></script>
 	<script src="../../js/auth-guard.js"></script>
 	<script>
-		(function(){
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', function(){ if (window.updateMemoryHighScore) window.updateMemoryHighScore(); });
-			} else {
-				if (window.updateMemoryHighScore) window.updateMemoryHighScore();
+		// Wait for all scripts to load
+		window.addEventListener('load', function() {
+			// Ensure gameHub is initialized
+			if (window.gameHub && window.gameHub.ensureInit) {
+				window.gameHub.ensureInit();
 			}
-		})();
+			
+			// Update memory high score display on load
+			updateMemoryHighScore();
+		});
+		
+		// Leaderboard function for Memory
+		function showMemoryLeaderboard() {
+			try {
+				if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
+					// Try to get remote leaderboard
+					window.remoteLeaderboard.list('memory', 10).then(scores => {
+						let message = '🏆 Top 10 - Memory Cards\n\n';
+						
+						if (scores && scores.length > 0) {
+							scores.forEach((score, index) => {
+								message += `${index + 1}. ${score.user}: ${score.score}\n`;
+							});
+						} else {
+							message += 'Chưa có điểm số nào.';
+						}
+						
+						alert(message);
+					}).catch(error => {
+						showMemoryLocalLeaderboard();
+					});
+				} else {
+					showMemoryLocalLeaderboard();
+				}
+			} catch (error) {
+				showMemoryLocalLeaderboard();
+			}
+		}
+		
+		function showMemoryLocalLeaderboard() {
+			try {
+				if (window.gameHub && window.gameHub.getLeaderboard) {
+					window.gameHub.getLeaderboard('memory').then(scores => {
+						let message = '🏆 Top 10 - Memory Cards (Local)\n\n';
+						
+						if (scores && scores.length > 0) {
+							scores.forEach((score, index) => {
+								message += `${index + 1}. ${score.name}: ${score.score}\n`;
+							});
+						} else {
+							message += 'Chưa có điểm số nào.';
+						}
+						
+						alert(message);
+					});
+				} else {
+					alert('Leaderboard chưa khả dụng.');
+				}
+			} catch (error) {
+				alert('Không thể hiển thị leaderboard: ' + error.message);
+			}
+		}
 	</script>
 </body>
 </html>

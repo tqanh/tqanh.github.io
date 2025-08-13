@@ -101,44 +101,66 @@ function spawnFood() {
 	food = pos;
 }
 
-function moveSnake() {
-	let head = {...snake[0]};
-	if (direction === 'LEFT') head.x--;
-	if (direction === 'RIGHT') head.x++;
-	if (direction === 'UP') head.y--;
-	if (direction === 'DOWN') head.y++;
-	// Check collision
-	if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) {
-		isPlaying = false;
-		showSnakeModal('Game Over! Score: ' + score);
+function gameLoop(currentTime) {
+	if (!isPlaying || isPaused) {
+		requestAnimationFrame(gameLoop);
 		return;
 	}
-	snake.unshift(head);
-	// Eat food
-	if (head.x === food.x && head.y === food.y) {
-		score++;
-		playBeep(680, 0.06);
-		spawnFood();
-		// speed up slightly every 5 points
-		if (score % 5 === 0) stepMs = Math.max(Math.floor(baseStepMs * 0.45), stepMs - 8);
-	} else {
-		snake.pop();
+	
+	// Accumulate time for consistent speed
+	if (lastTime === 0) lastTime = currentTime;
+	const deltaTime = currentTime - lastTime;
+	lastTime = currentTime;
+	accumulatorMs += deltaTime;
+	
+	// Move snake at fixed intervals
+	if (accumulatorMs >= stepMs) {
+		accumulatorMs = 0;
+		
+		// Move snake
+		const head = {x: snake[0].x, y: snake[0].y};
+		switch(direction) {
+			case 'UP': head.y--; break;
+			case 'DOWN': head.y++; break;
+			case 'LEFT': head.x--; break;
+			case 'RIGHT': head.x++; break;
+		}
+		
+		// Check collision with walls
+		if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+			gameOver();
+			return;
+		}
+		
+		// Check collision with self
+		if (snake.some(s => s.x === head.x && s.y === head.y)) {
+			gameOver();
+			return;
+		}
+		
+		// Check food collision
+		if (head.x === food.x && head.y === food.y) {
+			score++;
+			playBeep(680, 0.06);
+			spawnFood();
+			// Increase speed every 5 points
+			if (score % 5 === 0) {
+				stepMs = Math.max(40, baseStepMs - (score / 5) * 10);
+			}
+		} else {
+			snake.pop(); // Remove tail if no food eaten
+		}
+		
+		snake.unshift(head);
+		draw();
 	}
+	
+	requestAnimationFrame(gameLoop);
 }
 
-function gameLoop(ts) {
-	if (!lastTime) lastTime = ts;
-	const dt = ts - lastTime;
-	lastTime = ts;
-	if (isPlaying && !isPaused) {
-		accumulatorMs += dt;
-		while (accumulatorMs >= stepMs) {
-			moveSnake();
-			accumulatorMs -= stepMs;
-		}
-	}
-	draw();
-	requestAnimationFrame(gameLoop);
+function gameOver() {
+	isPlaying = false;
+	showSnakeModal(`Game Over! Điểm số: ${score}`);
 }
 
 document.addEventListener('keydown', e => {
@@ -172,20 +194,31 @@ canvas.addEventListener('touchend', function(e) {
 
 function updateSnakeHighScore() {
 	try {
+		console.log('Updating snake high score...');
 		if (window.gameHub && window.gameHub.getHighScore) {
 			const hs = window.gameHub.getHighScore('snake');
+			console.log('Got high score from gameHub:', hs);
 			const wrap = document.getElementById('high-score');
 			const val = document.getElementById('high-score-value');
 			if (wrap && val && typeof hs === 'number') {
 				val.textContent = String(hs);
 				wrap.style.display = hs > 0 ? 'block' : 'none';
+				console.log('Updated high score display:', hs);
+			} else {
+				console.log('High score elements not found or invalid score:', { wrap, val, hs });
 			}
+		} else {
+			console.log('gameHub not available:', window.gameHub);
 		}
-	} catch {}
+	} catch (error) {
+		console.error('Error updating snake high score:', error);
+	}
 }
 
 function startSnakeGame(speedMs) {
 	if (typeof speedMs === 'number' && speedMs > 40) baseStepMs = speedMs;
+	
+	// Reset game state
 	snake = [{x: 10, y: 10}];
 	direction = 'RIGHT';
 	spawnFood();
@@ -195,16 +228,21 @@ function startSnakeGame(speedMs) {
 	lastTime = 0;
 	accumulatorMs = 0;
 	stepMs = baseStepMs;
+	
+	// Update display
 	draw();
 	updateSnakeHighScore();
 }
 
 function showSnakeModal(msg) {
 	if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(300);
+	
+	// Save high score first
 	if (window.gameHub && window.gameHub.saveHighScore) {
 		window.gameHub.saveHighScore('snake', score);
 		updateSnakeHighScore();
 	}
+	
 	let modal = document.getElementById('snake-modal');
 	if (!modal) {
 		modal = document.createElement('div');
@@ -221,28 +259,40 @@ function showSnakeModal(msg) {
 		modal.style.zIndex = '9999';
 		document.body.appendChild(modal);
 	}
+	
 	// Build content programmatically (tránh inline handler)
 	const content = document.createElement('div');
 	content.style.cssText = 'background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;';
+	
 	const msgEl = document.createElement('span');
 	msgEl.id = 'snake-modal-message';
 	msgEl.textContent = msg;
+	
 	const actions = document.createElement('div');
 	actions.style.cssText = 'margin-top:16px;display:flex;gap:10px;justify-content:center;';
+	
 	const retry = document.createElement('button');
 	retry.textContent = 'Chơi lại';
 	retry.style.cssText = 'padding:8px 12px;';
-	retry.addEventListener('click', () => { modal.remove(); startSnakeGame(); });
+	retry.addEventListener('click', () => { 
+		modal.remove(); 
+		startSnakeGame(); 
+	});
+	
 	const back = document.createElement('button');
 	back.textContent = 'Back to Hub';
 	back.style.cssText = 'padding:8px 12px;';
-	back.addEventListener('click', () => { location.href='../../index.html'; });
+	back.addEventListener('click', () => { 
+		location.href='../../index.html'; 
+	});
+	
 	actions.appendChild(retry);
 	actions.appendChild(back);
 	content.appendChild(msgEl);
 	content.appendChild(document.createElement('br'));
 	content.appendChild(document.createElement('br'));
 	content.appendChild(actions);
+	
 	modal.innerHTML = '';
 	modal.appendChild(content);
 	modal.style.display = 'flex';

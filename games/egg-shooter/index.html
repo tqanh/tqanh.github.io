@@ -37,10 +37,12 @@
             </div>
         </div>
         
-        <div id="controls">
-            <button id="start-button">🚀 Bắt đầu</button>
-            <button id="restart-button" style="display: none;">🔄 Chơi lại</button>
-            <button id="back-button" onclick="location.href='../../index.html'">🏠 Về Hub</button>
+        <div class="game-controls">
+            <button id="startBtn" class="game-button">🎯 Bắt đầu</button>
+            <button id="pauseBtn" class="game-button">⏸️ Tạm dừng</button>
+            <button id="restartBtn" class="game-button" style="display: none;">🔄 Chơi lại</button>
+            <button id="leaderboardBtn" class="game-button leaderboard-btn">🏆 Bảng xếp hạng</button>
+            <button id="backBtn" class="game-button back-btn">🏠 Về Hub</button>
         </div>
         
         <div id="score">
@@ -92,12 +94,12 @@
         </div>
     </div>
     
+    <script src="script.js"></script>
+    <script src="sounds.js"></script>
     <script src="../../js/config.js"></script>
     <script src="../../js/remoteLeaderboard.js"></script>
-    <script src="../../js/auth-guard.js"></script>
     <script src="../../js/hub.js"></script>
-    <script src="sounds.js"></script>
-    <script src="script.js?v=20250813-1"></script>
+    <script src="../../js/auth-guard.js"></script>
     
     <script>
         // Update level display

@@ -429,3 +429,58 @@ button:active {
     text-align: center;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
+
+.game-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.game-button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 28px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.game-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+#startBtn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(76,175,80,0.4);
+}
+
+#pauseBtn {
+    background: linear-gradient(45deg, #FF9800, #F57C00);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(255,152,0,0.4);
+}
+
+#restartBtn {
+    background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(156,39,176,0.4);
+}
+
+.leaderboard-btn {
+    background: linear-gradient(45deg, #FFD700, #FFC107);
+    color: #333;
+    box-shadow: 0 6px 18px rgba(255,215,0,0.4);
+}
+
+.back-btn {
+    background: linear-gradient(45deg, #2196F3, #1976D2);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(25,118,210,0.4);
+}

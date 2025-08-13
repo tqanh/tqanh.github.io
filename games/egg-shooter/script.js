@@ -388,17 +388,29 @@ function showModal(message) {
     modal.style.display = 'flex';
 }
 
-function endGame(win = false) {
-    if (!win && window.navigator && window.navigator.vibrate) window.navigator.vibrate(300);
-    if (window.eggShooterSounds) window.eggShooterSounds.playSound(win ? 'win' : 'lose');
+function endGame(won) {
     isPlaying = false;
-    if (moveDownInterval) clearInterval(moveDownInterval);
-    if (window.gameHub) {
+    
+    // Show restart button and hide start button
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    if (startBtn) startBtn.style.display = 'none';
+    if (restartBtn) restartBtn.style.display = 'inline-block';
+    
+    if (won) {
+        // Play win sound
+        if (window.eggShooterSounds) window.eggShooterSounds.playSound('win');
+        alert('🎉 Chúc mừng! Bạn đã thắng với điểm số: ' + score);
+    } else {
+        // Play lose sound
+        if (window.eggShooterSounds) window.eggShooterSounds.playSound('lose');
+        alert('💥 Game Over! Điểm số của bạn: ' + score);
+    }
+    
+    // Save high score
+    if (window.gameHub && window.gameHub.saveHighScore) {
         window.gameHub.saveHighScore('egg-shooter', score);
     }
-    showModal(win ? 'Bạn thắng! Điểm: ' + score : 'Bạn đã thua!');
-    startBtn.style.display = 'inline-block';
-    restartBtn.style.display = 'none';
 }
 
 function shootEgg() {
@@ -748,6 +760,30 @@ function showLevelUpMessage() {
     }
 }
 
+function updateDisplays() {
+    // Update score display
+    const scoreValue = document.getElementById('scoreValue');
+    if (scoreValue) scoreValue.textContent = score;
+    
+    // Update level display
+    const levelValue = document.getElementById('levelValue');
+    if (levelValue) levelValue.textContent = level;
+    
+    // Update combo display
+    const comboValue = document.getElementById('comboValue');
+    if (comboValue) comboValue.textContent = combo;
+    
+    // Update game stats
+    const eggsDestroyedValue = document.getElementById('eggsDestroyedValue');
+    if (eggsDestroyedValue) eggsDestroyedValue.textContent = gameStats.eggsDestroyed;
+    
+    const perfectShotsValue = document.getElementById('perfectShotsValue');
+    if (perfectShotsValue) perfectShotsValue.textContent = gameStats.perfectShots;
+    
+    const totalShotsValue = document.getElementById('totalShotsValue');
+    if (totalShotsValue) totalShotsValue.textContent = gameStats.totalShots;
+}
+
 // Handle both mouse and touch events
 function handlePointerMove(e) {
     if (!isPlaying || shooting) return;
@@ -870,35 +906,39 @@ canvas.addEventListener('touchend', handlePointerEnd, { passive: false });
 // Flags
 let isPaused = false;
 let isFrozen = false;
+let gameOver = false; // Added gameOver flag
 
 // Define startGame and expose
 function startGame() {
+    if (isPlaying) return;
+    
+    // Reset game state
     score = 0;
     level = 1;
     combo = 0;
-    maxCombo = 0;
-    streak = 0;
     particles = [];
     powerUps = [];
     gameStats = { eggsDestroyed: 0, perfectShots: 0, totalShots: 0 };
     
-    scoreValue.textContent = score;
-    isPlaying = true;
-    isPaused = false;
-    isFrozen = false;
-    startBtn.style.display = 'none';
-    restartBtn.style.display = 'inline-block';
+    // Reset button states
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    if (startBtn) startBtn.style.display = 'none';
+    if (restartBtn) restartBtn.style.display = 'none';
     
+    // Initialize game
     initGrid();
-    setCurrentEgg();
-    shotEgg = null;
-    shooting = false;
+    isPlaying = true;
+    gameOver = false;
     
-    MOVE_DOWN_INTERVAL = 5000;
-    lastMoveDown = performance.now();
+    // Start game loop
+    if (!gameLoopRunning) {
+        gameLoopRunning = true;
+        gameLoop();
+    }
     
-    requestDraw();
-    ensureLoop();
+    // Update displays
+    updateDisplays();
 }
 window.startGame = startGame;
 
@@ -975,3 +1015,92 @@ if (restartBtn) {
 window.addEventListener('pointerdown', () => {
     if (!isPlaying && window.startGame) window.startGame();
 }, { once: true });
+
+// Leaderboard function
+function showLeaderboard() {
+    try {
+        if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
+            // Try to get remote leaderboard
+            window.remoteLeaderboard.list('egg-shooter', 10).then(scores => {
+                let message = '🏆 Top 10 - Egg Shooter\n\n';
+                
+                if (scores && scores.length > 0) {
+                    scores.forEach((score, index) => {
+                        message += `${index + 1}. ${score.user}: ${score.score}\n`;
+                    });
+                } else {
+                    message += 'Chưa có điểm số nào.';
+                }
+                
+                alert(message);
+            }).catch(error => {
+                showLocalLeaderboard();
+            });
+        } else {
+            showLocalLeaderboard();
+        }
+    } catch (error) {
+        showLocalLeaderboard();
+    }
+}
+
+function showLocalLeaderboard() {
+    try {
+        if (window.gameHub && window.gameHub.getLeaderboard) {
+            window.gameHub.getLeaderboard('egg-shooter').then(scores => {
+                let message = '🏆 Top 10 - Egg Shooter (Local)\n\n';
+                
+                if (scores && scores.length > 0) {
+                    scores.forEach((score, index) => {
+                        message += `${index + 1}. ${score.name}: ${score.score}\n`;
+                    });
+                } else {
+                    message += 'Chưa có điểm số nào.';
+                }
+                
+                alert(message);
+            });
+        } else {
+            alert('Leaderboard chưa khả dụng.');
+        }
+    } catch (error) {
+        alert('Không thể hiển thị leaderboard: ' + error.message);
+    }
+}
+
+// Expose functions globally
+window.showLeaderboard = showLeaderboard;
+
+// Button event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const leaderboardBtn = document.getElementById('leaderboardBtn');
+    const backBtn = document.getElementById('backBtn');
+    
+    if (startBtn) startBtn.addEventListener('click', () => {
+        if (!isPlaying && window.startGame) window.startGame();
+    });
+    
+    if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+    
+    if (restartBtn) restartBtn.addEventListener('click', () => {
+        if (window.startGame) window.startGame();
+    });
+    
+    if (leaderboardBtn) leaderboardBtn.addEventListener('click', showLeaderboard);
+    
+    if (backBtn) backBtn.addEventListener('click', () => {
+        location.href = '../../index.html';
+    });
+    
+    // Auto-start on first click/touch
+    document.addEventListener('click', function() {
+        if (!isPlaying && window.startGame) window.startGame();
+    }, { once: true });
+    
+    document.addEventListener('touchstart', function() {
+        if (!isPlaying && window.startGame) window.startGame();
+    }, { once: true });
+});

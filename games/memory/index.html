@@ -1,76 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" href="https://img.icons8.com/color/48/000000/memory-game.png">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/memory-game.png">
-    <meta name="theme-color" content="#2196f3">
-    <title>Memory Cards - Coming Soon</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #f0f0f0;
-            font-family: 'Roboto', sans-serif;
-        }
-        
-        .coming-soon {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        h1 {
-            color: #2196f3;
-            margin-bottom: 20px;
-        }
-        
-        .back-button {
-            padding: 10px 20px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        
-        .back-button:hover {
-            background: #1976d2;
-        }
-
-        #memory-board {
-            display: grid;
-            grid-template-columns: repeat(4, 60px);
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-
-        #memory-moves {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="icon" href="https://img.icons8.com/color/48/000000/dinosaur.png">
+	<link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/dinosaur.png">
+	<meta name="theme-color" content="#2196f3">
+	<title>Memory Cards</title>
+	<style>
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+			margin: 0;
+			background: #f0f0f0;
+			font-family: 'Roboto', sans-serif;
+		}
+		.coming-soon {
+			text-align: center;
+			padding: 20px;
+		}
+		h1 { color: #2196f3; margin-bottom: 10px; }
+		#memory-board {
+			display: grid;
+			grid-template-columns: repeat(4, 70px);
+			gap: 12px;
+			justify-content: center;
+			margin-bottom: 10px;
+		}
+		.memory-card {
+			width: 70px;
+			height: 70px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #90caf9;
+			border-radius: 10px;
+			box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+			font-size: 34px;
+			cursor: pointer;
+			user-select: none;
+			-webkit-user-select: none;
+			touch-action: manipulation;
+			transition: transform 0.12s ease, background 0.2s ease;
+		}
+		.memory-card:active { transform: scale(0.97); }
+		.memory-card.hidden { background: #bdbdbd; color: transparent; }
+		#memory-moves { font-size: 18px; margin-bottom: 10px; }
+		.hint { color: #666; font-size: 14px; margin-bottom: 10px; }
+		.back-button { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 12px; }
+		.back-button:hover { background: #1976d2; }
+		button { padding: 10px 16px; border: none; background: #4caf50; color: #fff; border-radius: 6px; cursor: pointer; }
+		button:hover { background: #43a047; }
+		@media (max-width: 480px) {
+			#memory-board { grid-template-columns: repeat(4, 60px); gap: 10px; }
+			.memory-card { width: 60px; height: 60px; font-size: 28px; }
+		}
+	</style>
 </head>
 <body>
-    <div class="coming-soon" ontouchstart="" style="touch-action:manipulation;">
-        <h1>Memory Cards Game</h1>
-        <p>This game is coming soon! Stay tuned for updates.</p>
-        <div style="text-align:center;margin:20px 0;">
-            <div id="memory-board"></div>
-            <div id="memory-moves">Moves: 0</div>
-            <button onclick="startMemoryGame()">Chơi ngay</button>
-            <a href="../../index.html" class="back-button">Back to Hub</a>
-        </div>
-    </div>
-    <script src="memory.js"></script>
+	<div class="coming-soon" ontouchstart="" style="touch-action:manipulation;">
+		<h1>Memory Cards Game</h1>
+		<p class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</p>
+		<div style="text-align:center;margin:20px 0;">
+			<div id="memory-board"></div>
+			<div id="memory-moves">Moves: 0</div>
+			<button onclick="startMemoryGame()">Chơi ngay</button>
+			<a href="../../index.html" class="back-button">Back to Hub</a>
+		</div>
+	</div>
+	<script src="memory.js"></script>
 </body>
 </html>

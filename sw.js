@@ -27,30 +27,43 @@ self.addEventListener('activate', (e) => {
   );
 });
 self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
-  if (!(url.protocol === 'http:' || url.protocol === 'https:') || e.request.method !== 'GET') {
+  const req = e.request;
+  const url = new URL(req.url);
+  if (!(url.protocol === 'http:' || url.protocol === 'https:') || req.method !== 'GET') {
     return;
   }
+  const isNavigate = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
   const isSameOrigin = url.origin === self.location.origin;
-  e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request)
+
+  if (isNavigate) {
+    // Network-first for HTML to avoid stale pages after soft reload
+    e.respondWith(
+      fetch(new Request(req, { cache: 'no-store' }))
         .then((resp) => {
-          const ok = resp && resp.status === 200;
-          const isBasic = resp && resp.type === 'basic';
-          if (ok && (isBasic || isSameOrigin)) {
+          if (resp && resp.status === 200) {
             const clone = resp.clone();
-            caches.open(CACHE_NAME).then((c) => c.put(e.request, clone)).catch(() => {});
+            caches.open(CACHE_NAME).then((c) => c.put(req, clone)).catch(() => {});
           }
           return resp;
         })
-        .catch(() => {
-          if (e.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-          return Promise.reject(new Error('Network error'));
-        });
+        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Cache-first for static assets
+  e.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((resp) => {
+        const ok = resp && resp.status === 200;
+        const isBasic = resp && resp.type === 'basic';
+        if (ok && (isBasic || isSameOrigin)) {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone)).catch(() => {});
+        }
+        return resp;
+      });
     })
   );
 });

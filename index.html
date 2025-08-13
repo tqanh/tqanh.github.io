@@ -12,8 +12,23 @@
     <title>Game Hub Collection</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/main.css">
+    <style>
+        .user-controls { position: fixed; top: 20px; left: 20px; background: #fff; padding: 10px 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 2; }
+        .leaderboards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
+        .lb-card { background: #fff; padding: 10px 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .lb-card h4 { margin: 6px 0 8px; color: #2196f3; }
+        .lb-card ul { list-style: none; padding: 0; margin: 0; }
+        .lb-card li { padding: 2px 0; border-bottom: 1px solid #eee; }
+    </style>
 </head>
 <body>
+    <div class="user-controls">
+        <div style="font-weight:700; margin-bottom:6px;">User: <span id="currentUserLabel">-</span></div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <select id="userSelect"></select>
+            <button id="addUserBtn" class="play-button" style="padding:6px 10px;">Add</button>
+        </div>
+    </div>
     <div class="hub-container">
         <header class="hub-header">
             <h1>Game Hub Collection</h1>
@@ -49,13 +64,19 @@
         <!-- High Scores Section -->
         <div class="high-scores">
             <h2>High Scores</h2>
-            <ul class="score-list" id="highScores">
-                <!-- Scores will be populated by JavaScript -->
-            </ul>
+            <ul class="score-list" id="highScores"></ul>
+        </div>
+
+        <!-- Leaderboards -->
+        <div class="leaderboards">
+            <div class="lb-card"><h4>Leaderboard - Egg Shooter</h4><ul id="lb-egg-shooter"></ul></div>
+            <div class="lb-card"><h4>Leaderboard - Snake</h4><ul id="lb-snake"></ul></div>
+            <div class="lb-card"><h4>Leaderboard - Memory</h4><ul id="lb-memory"></ul></div>
         </div>
     </div>
 
     <script src="js/hub.js"></script>
+    <script src="js/remoteLeaderboard.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
@@ -67,6 +88,6 @@
 </body>
 <!-- Version info bottom center -->
 <div style="width:100vw;text-align:center;position:fixed;bottom:8px;left:0;font-size:0.95em;color:#2196f3;opacity:0.7;z-index:999;pointer-events:none;">
-    Version 1.9.0
+    Version 2.0.0
 </div>
 </html>

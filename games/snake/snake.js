@@ -1,6 +1,6 @@
 const canvas = document.getElementById('snake-canvas');
 const ctx = canvas.getContext('2d');
-const box = 20;
+let box = 20; // dynamic after resize
 const rows = 20;
 const cols = 20;
 let snake = [{x: 10, y: 10}];
@@ -10,17 +10,31 @@ let score = 0;
 let isPlaying = false;
 let isPaused = false;
 
+// Responsive sizing
+function resizeGame() {
+	// Target canvas size based on viewport; keep square and grid-aligned
+	const maxW = Math.min(window.innerWidth - 40, 600);
+	const maxH = Math.min(window.innerHeight - 160, 600); // leave space for UI
+	const size = Math.max(220, Math.min(maxW, maxH));
+	box = Math.floor(size / cols);
+	const cssSize = box * cols; // multiple of cols
+	canvas.style.width = cssSize + 'px';
+	canvas.style.height = cssSize + 'px';
+	scaleCanvas();
+	draw();
+}
+
 // HiDPI scaling for crisp rendering
 function scaleCanvas() {
 	const dpr = window.devicePixelRatio || 1;
-	const cssW = canvas.width;
-	const cssH = canvas.height;
-	canvas.width = cssW * dpr;
-	canvas.height = cssH * dpr;
+	const rect = canvas.getBoundingClientRect();
+	canvas.width = Math.round(rect.width * dpr);
+	canvas.height = Math.round(rect.height * dpr);
 	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-scaleCanvas();
-window.addEventListener('resize', scaleCanvas);
+resizeGame();
+window.addEventListener('resize', resizeGame);
+window.addEventListener('orientationchange', resizeGame);
 
 // Timing using RAF accumulator for smooth, consistent speed
 let lastTime = 0;
@@ -191,11 +205,7 @@ function showSnakeModal(msg) {
 		modal.style.justifyContent = 'center';
 		modal.style.alignItems = 'center';
 		modal.style.zIndex = '9999';
-		modal.innerHTML = `<div style="background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;">
-			<span id="snake-modal-message"></span><br><br>
-			<button onclick="document.getElementById('snake-modal').remove();startSnakeGame(baseStepMs);">Chơi lại</button>
-			<button onclick="location.href='../../index.html'">Back to Hub</button>
-		</div>`;
+		modal.innerHTML = `<div style=\"background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;\">\n\t\t\t<span id=\\"snake-modal-message\\"></span><br><br>\n\t\t\t<button onclick=\\"document.getElementById('snake-modal').remove();startSnakeGame(baseStepMs);\\">Chơi lại</button>\n\t\t\t<button onclick=\\"location.href='../../index.html'\\">Back to Hub</button>\n\t\t</div>`;
 		document.body.appendChild(modal);
 	}
 	document.getElementById('snake-modal-message').textContent = msg;

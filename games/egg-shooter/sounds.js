@@ -1,5 +1,5 @@
 
-// Enhanced Sound System for Egg Shooter Game (lazy-init, autoplay-safe)
+// Hệ thống âm thanh nâng cao cho game Bắn Trứng (khởi tạo lười, an toàn autoplay)
 class EggShooterSounds {
     constructor() {
         this.sounds = {};

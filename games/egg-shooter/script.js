@@ -278,6 +278,20 @@ function drawGrid() {
         ctx.fillText(`COMBO x${combo}`, canvas.width / 2, 50);
         ctx.restore();
     }
+    
+    // Draw pause indicator
+    if (isPlaying && isPaused) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏸️ TẠM DỪNG', canvas.width / 2, canvas.height / 2 - 30);
+        ctx.font = '24px Arial';
+        ctx.fillText('Nhấn P hoặc bấm nút để tiếp tục', canvas.width / 2, canvas.height / 2 + 20);
+        ctx.restore();
+    }
 }
 
 function animateEggRemoval(match) {
@@ -422,6 +436,7 @@ function showModal(message) {
 
 function endGame(won) {
     isPlaying = false;
+    isPaused = false; // Reset pause state when game ends
     
     // Show restart button and hide start button
     const startBtn = document.getElementById('startBtn');
@@ -443,6 +458,12 @@ function endGame(won) {
     if (window.gameHub && window.gameHub.saveHighScore) {
         window.gameHub.saveHighScore('egg-shooter', score);
     }
+    
+    // Update button UI
+    updateEggMainBtn();
+    
+    // Request final draw
+    requestDraw();
 }
 
 function shootEgg() {
@@ -794,7 +815,7 @@ function checkLevelUp() {
 }
 
 function showLevelUpMessage() {
-    const message = `Level ${level}! Tốc độ tăng!`;
+            const message = `Cấp độ ${level}! Tốc độ tăng!`;
     showModal(message);
     
     // Add level up particles
@@ -812,13 +833,13 @@ function updateDisplays() {
     const scoreValue = document.getElementById('scoreValue');
     if (scoreValue) scoreValue.textContent = score;
     
-    // Update level display
-    const levelValue = document.getElementById('levelValue');
-    if (levelValue) levelValue.textContent = level;
-    
-    // Update combo display
-    const comboValue = document.getElementById('comboValue');
-    if (comboValue) comboValue.textContent = combo;
+            // Update level display
+        const levelValue = document.getElementById('level-value');
+        if (levelValue) levelValue.textContent = level;
+        
+        // Update combo display
+        const comboValue = document.getElementById('combo-value');
+        if (comboValue) comboValue.textContent = combo;
     
     // Update game stats
     const eggsDestroyedValue = document.getElementById('eggsDestroyedValue');
@@ -833,7 +854,7 @@ function updateDisplays() {
 
 // Handle both mouse and touch events
 function handlePointerMove(e) {
-    if (!isPlaying || shooting) return;
+    if (!isPlaying || isPaused || shooting) return;
     
     const rect = canvas.getBoundingClientRect();
     // Get coordinates for both mouse and touch
@@ -862,7 +883,7 @@ function handlePointerMove(e) {
 }
 
 function handlePointerEnd(e) {
-    if (!isPlaying || shooting) return;
+    if (!isPlaying || isPaused || shooting) return;
     // Recompute aim toward click/touch position
     const rect = canvas.getBoundingClientRect();
     const pt = e.changedTouches ? e.changedTouches[0] : e.touches ? e.touches[0] : e;
@@ -909,7 +930,7 @@ canvas.addEventListener('mousemove', handlePointerMove);
 
 // Bắn bằng mousedown (trái/phải) và chặn menu chuột phải
 function handleMouseDown(e) {
-    if (!isPlaying || shooting) return;
+    if (!isPlaying || isPaused || shooting) return;
     // Debounce: khóa bắn trong 80ms để tránh sự kiện kép từ thiết bị/driver
     if (window.__lastShotTs && performance.now() - window.__lastShotTs < 80) {
         return;
@@ -974,6 +995,9 @@ function startGame() {
     powerUps = [];
     gameStats = { eggsDestroyed: 0, perfectShots: 0, totalShots: 0 };
     
+    // Reset pause state
+    isPaused = false;
+    
     // Reset button states
     const startBtn = document.getElementById('startBtn');
     const restartBtn = document.getElementById('restartBtn');
@@ -995,6 +1019,9 @@ function startGame() {
     
     // Update displays
     updateDisplays();
+    
+    // Request initial draw
+    requestDraw();
 }
 window.startGame = startGame;
 
@@ -1034,7 +1061,7 @@ function gameLoop() {
     }
 
     // Vẽ mọi thứ
-    if (drawRequested) drawGrid();
+    if (drawRequested || (isPlaying && isPaused)) drawGrid();
     drawRequested = false; // Clear the flag after drawing
 
     // Expose cho UI
@@ -1059,10 +1086,6 @@ if (typeof window.gameLoop === 'function') {
 }
 
 // Single button (eggMainBtn) handled in DOMContentLoaded block
-// Auto-start on first user interaction in case button binding fails
-window.addEventListener('pointerdown', () => {
-    if (!isPlaying && window.startGame) window.startGame();
-}, { once: true });
 
 // Leaderboard function
 function showLeaderboard() {
@@ -1071,7 +1094,7 @@ function showLeaderboard() {
             // Chỉ hiển thị leaderboard ONLINE, không fallback local
             window.remoteLeaderboard.list('egg-shooter', 10)
               .then(scores => {
-                let message = '🏆 Top 10 - Egg Shooter\n\n';
+                let message = '🏆 Top 10 - Bắn Trứng\n\n';
                 if (Array.isArray(scores) && scores.length) {
                   scores.forEach((row, i) => { message += `${i+1}. ${row.user}: ${row.score}\n`; });
                 } else {
@@ -1093,7 +1116,7 @@ function showLocalLeaderboard() {
     try {
         if (window.gameHub && window.gameHub.getLeaderboard) {
             window.gameHub.getLeaderboard('egg-shooter').then(scores => {
-                let message = '🏆 Top 10 - Egg Shooter (Local)\n\n';
+                let message = '🏆 Top 10 - Bắn Trứng (Local)\n\n';
                 
                 if (scores && scores.length > 0) {
                     scores.forEach((score, index) => {
@@ -1121,15 +1144,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const eggBtn = document.getElementById('eggMainBtn');
     const leaderboardBtn = document.getElementById('leaderboardBtn');
     const backBtn = document.getElementById('backBtn');
-    if (eggBtn) eggBtn.onclick = function(){ if (!isPlaying) { if(window.startGame) window.startGame(); updateEggMainBtn(); } else { isPaused = !isPaused; updateEggMainBtn(); } };
+    if (eggBtn) eggBtn.onclick = function(){ if (!isPlaying) { if(window.startGame) window.startGame(); updateEggMainBtn(); requestDraw(); } else { isPaused = !isPaused; updateEggMainBtn(); requestDraw(); } };
     if (leaderboardBtn) leaderboardBtn.addEventListener('click', showLeaderboard);
     if (backBtn) backBtn.addEventListener('click', () => { location.href='../../index.html'; });
     updateEggMainBtn();
-    // Auto-start on first pointer interaction for convenience
-    window.addEventListener('pointerdown', () => { if (!isPlaying && window.startGame) window.startGame(); updateEggMainBtn(); }, { once: true });
+    // Auto-start on first pointer interaction for convenience (ignore clicks on main button)
+    const __autoStartOnce = (e) => {
+        const target = e && e.target ? e.target : null;
+        if (target && (target.id === 'eggMainBtn' || (typeof target.closest === 'function' && target.closest('#eggMainBtn')))) {
+            window.removeEventListener('pointerdown', __autoStartOnce, true);
+            return;
+        }
+        if (!isPlaying && window.startGame) {
+            window.startGame();
+            updateEggMainBtn();
+            requestDraw();
+        }
+        window.removeEventListener('pointerdown', __autoStartOnce, true);
+    };
+    window.addEventListener('pointerdown', __autoStartOnce, true);
+    
+    // Add keyboard support for pause (P key)
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'KeyP' && isPlaying) {
+            isPaused = !isPaused;
+            updateEggMainBtn();
+            requestDraw();
+        }
+    });
 });
 
-function updateEggMainBtn(){ const b=document.getElementById('eggMainBtn'); if(!b) return; b.textContent = !isPlaying ? '🎯 Bắt đầu' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng'); }
+function updateEggMainBtn(){ 
+    const b=document.getElementById('eggMainBtn'); 
+    if(!b) return; 
+    b.textContent = !isPlaying ? '🎯 Bắt đầu' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng'); 
+}
 window.updateEggMainBtn = updateEggMainBtn;
 
 // Theme & speed setters exposed for options UI

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -8,7 +8,7 @@
     <link rel="icon" href="../../assets/icons/snake.svg">
     <link rel="apple-touch-icon" href="../../assets/icons/snake.svg">
     <meta name="theme-color" content="#2196f3">
-    <title>Snake Game</title>
+    <title>Game Rắn Săn Mồi</title>
     <style>
         :root { --card-max: 560px; }
         body {
@@ -107,11 +107,11 @@
 <body>
     <div class="container">
         <div class="card" ontouchstart="" style="touch-action:manipulation;">
-            <h1>Snake Game</h1>
+            <h1>Game Rắn Săn Mồi</h1>
             <div class="board">
                 <div class="hud">
-                    <div id="score-badge" class="badge">Score: <span id="score-text">0</span></div>
-                    <div id="state-badge" class="badge" style="opacity:.9;">Ready</div>
+                    <div id="score-badge" class="badge">Điểm: <span id="score-text">0</span></div>
+                    <div id="state-badge" class="badge" style="opacity:.9;">Sẵn sàng</div>
                 </div>
                 <canvas id="snake-canvas" width="400" height="400"></canvas>
             </div>
@@ -119,7 +119,7 @@
             <div class="actions">
                 <button id="snakeMainBtn" onclick="snakeMainButtonClick()">Chơi ngay</button>
                 <button onclick="showSnakeLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
-                <a href="../../index.html" class="back-button">Back to Hub</a>
+                <a href="../../index.html" class="back-button">Về Hub</a>
             </div>
             <div class="actions" style="gap:8px;align-items:center;">
                 <label>⚙️ Tốc độ
@@ -137,9 +137,9 @@
                 </label>
                 <label style="margin-left:8px;">🎨 Giao diện
                     <select id="opt-theme" style="margin-left:6px;">
-                        <option value="classic">Classic</option>
+                        <option value="classic">Cổ điển</option>
                         <option value="neon">Neon</option>
-                        <option value="dark">Dark</option>
+                        <option value="dark">Tối</option>
                     </select>
                 </label>
             </div>
@@ -174,7 +174,7 @@
                 if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
                     // Try to get remote leaderboard
                     window.remoteLeaderboard.list('snake', 10).then(scores => {
-                        let message = '🏆 Top 10 - Snake\n\n';
+                        let message = '🏆 Top 10 - Rắn Săn Mồi\n\n';
                         
                         if (scores && scores.length > 0) {
                             scores.forEach((score, index) => {
@@ -200,7 +200,7 @@
             try {
                 if (window.gameHub && window.gameHub.getLeaderboard) {
                     window.gameHub.getLeaderboard('snake').then(scores => {
-                        let message = '🏆 Top 10 - Snake (Local)\n\n';
+                        let message = '🏆 Top 10 - Rắn Săn Mồi (Local)\n\n';
                         
                         if (scores && scores.length > 0) {
                             scores.forEach((score, index) => {

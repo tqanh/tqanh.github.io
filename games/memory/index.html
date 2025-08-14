@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -8,7 +8,7 @@
 	<link rel="icon" href="../../assets/icons/memory.svg">
 	<link rel="apple-touch-icon" href="../../assets/icons/memory.svg">
 	<meta name="theme-color" content="#2196f3">
-	<title>Memory Cards</title>
+	<title>Thẻ Ghi Nhớ</title>
 	<style>
 		:root { --card-max: 560px; }
 		body {
@@ -132,11 +132,11 @@
 <body>
 	<div class="container">
 		<div class="card" ontouchstart="" style="touch-action:manipulation;">
-			<h1>Memory Cards Game</h1>
+			<h1>Trò chơi Thẻ Ghi Nhớ</h1>
 			<div class="board">
 				<div class="hud">
-					<div class="badge" id="moves-badge">Moves: <span id="moves-text">0</span></div>
-					<div class="badge">Good luck!</div>
+					<div class="badge" id="moves-badge">Lượt: <span id="moves-text">0</span></div>
+					<div class="badge">Chúc may mắn!</div>
 				</div>
 				<div id="memory-board"></div>
 			</div>
@@ -145,7 +145,7 @@
 				<button id="memoryStartBtn">Chơi ngay</button>
 				<button id="memoryPauseBtn">⏸️ Tạm dừng</button>
 				<button onclick="showMemoryLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
-				<a href="../../index.html" class="back-button">Back to Hub</a>
+				<a href="../../index.html" class="back-button">Về Hub</a>
 			</div>
 			<div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
 		</div>
@@ -183,7 +183,7 @@
 				if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
 					// Try to get remote leaderboard
 					window.remoteLeaderboard.list('memory', 10).then(scores => {
-						let message = '🏆 Top 10 - Memory Cards\n\n';
+						let message = '🏆 Top 10 - Thẻ Ghi Nhớ\n\n';
 						
 						if (scores && scores.length > 0) {
 							scores.forEach((score, index) => {
@@ -209,7 +209,7 @@
 			try {
 				if (window.gameHub && window.gameHub.getLeaderboard) {
 					window.gameHub.getLeaderboard('memory').then(scores => {
-						let message = '🏆 Top 10 - Memory Cards (Local)\n\n';
+						let message = '🏆 Top 10 - Thẻ Ghi Nhớ (Local)\n\n';
 						
 						if (scores && scores.length > 0) {
 							scores.forEach((score, index) => {

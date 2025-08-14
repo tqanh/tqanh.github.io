@@ -50,7 +50,7 @@ function renderMemory() {
 		board.appendChild(div);
 	});
 	const movesEl = document.getElementById('memory-moves');
-	if (movesEl) movesEl.textContent = 'Moves: ' + moves;
+    if (movesEl) movesEl.textContent = 'Lượt: ' + moves;
 	const badge = document.getElementById('moves-text');
 	if (badge) badge.textContent = String(moves);
 }
@@ -86,7 +86,7 @@ function finishMemory() {
 		window.gameHub.saveHighScore('memory', score);
 		updateMemoryHighScore();
 	}
-	showMemoryModal('You win! Moves: ' + moves);
+    showMemoryModal('Bạn đã thắng! Lượt: ' + moves);
 }
 
 // Toggle pause helper for UI
@@ -111,10 +111,10 @@ function showMemoryModal(msg) {
 		modal.style.justifyContent = 'center';
 		modal.style.alignItems = 'center';
 		modal.style.zIndex = '9999';
-		modal.innerHTML = `<div style="background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;">
+        modal.innerHTML = `<div style="background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;">
 			<span id="memory-modal-message"></span><br><br>
 			<button onclick="document.getElementById('memory-modal').remove();startMemoryGame();">Chơi lại</button>
-			<button onclick="location.href='../../index.html'">Back to Hub</button>
+            <button onclick="location.href='../../index.html'">Về Hub</button>
 		</div>`;
 		document.body.appendChild(modal);
 	}

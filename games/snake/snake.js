@@ -83,7 +83,7 @@ function draw() {
 	const scoreEl = document.getElementById('score-text');
 	if (scoreEl) scoreEl.textContent = String(score);
 	const stateEl = document.getElementById('state-badge');
-	if (stateEl) stateEl.textContent = isPlaying ? (isPaused ? 'Paused' : 'Playing') : 'Ready';
+    if (stateEl) stateEl.textContent = isPlaying ? (isPaused ? 'Tạm dừng' : 'Đang chơi') : 'Sẵn sàng';
 
     // Paused overlay
     if (isPlaying && isPaused) {
@@ -93,7 +93,7 @@ function draw() {
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 28px system-ui, -apple-system, Segoe UI, Roboto';
         ctx.textAlign = 'center';
-        ctx.fillText('PAUSED', canvas.width/2, canvas.height/2);
+        ctx.fillText('TẠM DỪNG', canvas.width/2, canvas.height/2);
         ctx.restore();
     }
 }
@@ -192,7 +192,7 @@ function gameLoop(currentTime) {
 function gameOver() {
 	isPlaying = false;
     updateSnakeMainButtonUI();
-	showSnakeModal(`Game Over! Điểm số: ${score}`);
+    showSnakeModal(`Thua cuộc! Điểm số: ${score}`);
 }
 
 document.addEventListener('keydown', e => {
@@ -320,8 +320,8 @@ function showSnakeModal(msg) {
         if (window.updateSnakeMainButtonUI) updateSnakeMainButtonUI();
     });
 	
-	const back = document.createElement('button');
-	back.textContent = 'Back to Hub';
+    const back = document.createElement('button');
+    back.textContent = 'Về Hub';
 	back.style.cssText = 'padding:8px 12px;';
 	back.addEventListener('click', () => { 
 		location.href='../../index.html'; 

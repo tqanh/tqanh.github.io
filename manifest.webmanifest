@@ -1,7 +1,7 @@
 {
   "name": "Game Hub Collection",
   "short_name": "Game Hub",
-  "description": "Bộ sưu tập game đa nền tảng với Egg Shooter, Snake và Memory Cards",
+  "description": "Bộ sưu tập game đa nền tảng với Bắn Trứng, Rắn Săn Mồi và Thẻ Ghi Nhớ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

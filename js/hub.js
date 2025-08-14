@@ -6,9 +6,9 @@
 // - gh_leaderboards: { [gameKey]: Array<{ name: string, score: number }> }
 
 const DEFAULT_GAMES = {
-	'egg-shooter': { name: 'Egg Shooter' },
-	'snake': { name: 'Snake' },
-	'memory': { name: 'Memory Cards' }
+	'egg-shooter': { name: 'Bắn Trứng' },
+	'snake': { name: 'Rắn Săn Mồi' },
+	'memory': { name: 'Thẻ Ghi Nhớ' }
 };
 
 function readJSON(key, fallback) {
@@ -23,8 +23,8 @@ function ensureInit() {
 	let users = readJSON('gh_users', []);
 	let scores = readJSON('gh_scores', {});
 	let current = localStorage.getItem('gh_current_user');
-	if (!users.length) {
-		users = ['Player 1', 'Player 2'];
+    if (!users.length) {
+        users = ['Người chơi 1', 'Người chơi 2'];
 		writeJSON('gh_users', users);
 	}
 	if (!current) {

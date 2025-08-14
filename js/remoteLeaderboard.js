@@ -5,15 +5,22 @@
   let supa = null;
   async function initClient(){
     if (!hasRemote()) return null;
-    if (!window.supabase) {
-      await new Promise((resolve) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
-        s.onload = resolve; document.head.appendChild(s);
-      });
+    try {
+      if (!window.supabase) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      if (!supa) supa = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      return supa;
+    } catch (error) {
+      console.error('Failed to initialize Supabase client:', error);
+      return null;
     }
-    if (!supa) supa = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-    return supa;
   }
 
   async function currentUserId(){
@@ -22,37 +29,48 @@
       const { data } = await c.auth.getUser(); 
       if (data?.user?.id) return data.user.id;
     } catch { }
-    
-    // Check for local user
-    const displayName = localStorage.getItem('gh_display_name');
-    if (displayName) {
-      const users = JSON.parse(localStorage.getItem('gh_local_users') || '[]');
-      const user = users.find(u => u.displayName === displayName);
-      if (user) return 'local_' + user.id;
-    }
-    
+    // Không trả về local_* cho owner vì bảng remote không có cột owner cho local
     return null;
   }
 
   async function saveScoreRemote(game, displayName, score){
     const client = await initClient(); if (!client) return false;
     try {
-      const uid = await currentUserId();
-      const payload = uid ? { user: displayName, owner: uid, game, score } : { user: displayName, game, score };
-      const { error } = await client.from(cfg.table).upsert(payload, { onConflict: uid ? 'owner,game' : 'user,game' });
+      // Luôn lưu theo (user, game) để tránh lỗi schema owner/rls
+      const payload = { user: displayName, game, score };
+      let { error } = await client.from(cfg.table).upsert(payload, { onConflict: 'user,game' });
+      // Fallback: table không có cột owner → thử lại không dùng owner
+      if (error && (String(error.message || '').includes("owner") || error.code === 'PGRST204')){
+        const fallbackPayload = { user: displayName, game, score };
+        ({ error } = await client.from(cfg.table).upsert(fallbackPayload, { onConflict: 'user,game' }));
+      }
+      // Fallback 2: bảng chưa có unique index cho ON CONFLICT (42P10)
+      if (error && (error.code === '42P10' || /no unique|exclusion constraint/i.test(String(error.message)))) {
+        // Tự xử lý: nếu đã có bản ghi → update, nếu chưa → insert
+        const match = { user: displayName, game };
+        const { data: exists } = await client.from(cfg.table).select('id').match(match).limit(1).maybeSingle();
+        if (exists && exists.id) {
+          const { error: updErr } = await client.from(cfg.table).update({ score }).match(match);
+          if (updErr) throw updErr;
+          error = null;
+        } else {
+          const { error: insErr } = await client.from(cfg.table).insert([payload]);
+          if (insErr) throw insErr;
+          error = null;
+        }
+      }
       if (error) throw error; return true;
-    } catch { return false; }
+    } catch (error) {
+      console.error('Failed to save score remotely:', error);
+      return false; 
+    }
   }
 
   async function getLeaderboardRemote(game, limit=10){
     const client = await initClient(); if (!client) return [];
     try {
-      const { data, error } = await client
-        .from(cfg.table)
-        .select('user, game, score')
-        .eq('game', game)
-        .order('score', { ascending: false })
-        .limit(limit);
+      let query = client.from(cfg.table).select('user, game, score').eq('game', game).order('score', { ascending: false }).limit(limit);
+      const { data, error } = await query;
       if (error) throw error; return data || [];
     } catch { return []; }
   }
@@ -83,7 +101,9 @@
   
   async function signUpUserId(userId, password, displayName){
     try {
-      return await signUpEmail(idToEmail(userId), password, displayName);
+      const r = await signUpEmail(idToEmail(userId), password, displayName);
+      try { localStorage.setItem('gh_display_name', displayName || userId); } catch {}
+      return r;
     } catch (error) {
       console.error('Supabase signup failed:', error);
       // Fallback: create local user if Supabase fails
@@ -106,7 +126,10 @@
   
   async function signInUserId(userId, password){
     try {
-      return await signInEmail(idToEmail(userId), password);
+      const res = await signInEmail(idToEmail(userId), password);
+      // Lưu tên hiển thị để dùng làm "user" khi ghi điểm online
+      try { localStorage.setItem('gh_display_name', userId); } catch {}
+      return res;
     } catch (error) {
       console.error('Supabase signin failed:', error);
       // Fallback: check local users

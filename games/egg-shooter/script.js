@@ -1,7 +1,7 @@
 const canvas = document.getElementById('bubble-canvas');
 const ctx = canvas.getContext('2d');
-const startBtn = document.getElementById('start-button');
-const restartBtn = document.getElementById('restart-button');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
 const scoreValue = document.getElementById('score-value');
 const currentEggDiv = document.getElementById('current-egg');
 
@@ -245,7 +245,11 @@ function animateEggRemoval(match) {
         }
     });
     
-    // Update combo
+    // Update stats and combo
+    if (window.gameStats) {
+        window.gameStats.eggsDestroyed = (window.gameStats.eggsDestroyed || 0) + match.length;
+        window.gameStats.perfectShots = (window.gameStats.perfectShots || 0) + 1;
+    }
     combo++;
     if (combo > maxCombo) maxCombo = combo;
     
@@ -420,7 +424,7 @@ function shootEgg() {
     shotEgg = {
         x: shooter.x,
         y: shooter.y,
-        color: currentEgg.color,
+        color: (currentEgg && currentEgg.color) ? currentEgg.color : randomColor(),
         dx: Math.cos(shootAngle) * 16,
         dy: -Math.sin(shootAngle) * 16
     };
@@ -599,11 +603,14 @@ function activateSpeed() {
 function placeEgg(row, col) {
     // Find the best position to place the egg
     let placed = false;
+    let placedRow = row;
+    let placedCol = col;
     
     // Try to place in the exact position first
     if (!grid[row][col]) {
         grid[row][col] = { color: currentEgg.color };
         placed = true;
+        placedRow = row; placedCol = col;
     } else {
         // Find nearby empty positions
         for (let r = row; r < ROWS; r++) {
@@ -611,6 +618,7 @@ function placeEgg(row, col) {
                 if (!grid[r][c]) {
                     grid[r][c] = { color: currentEgg.color };
                     placed = true;
+                    placedRow = r; placedCol = c;
                     break;
                 }
             }
@@ -619,18 +627,10 @@ function placeEgg(row, col) {
     }
     
     if (placed) {
-        // Check for matches
-        checkMatch(row, col);
+        // Check for matches at the ACTUAL placed cell
+        checkMatch(placedRow, placedCol);
         drawGrid();
         checkLose();
-        
-        // Update stats
-        gameStats.eggsDestroyed++;
-        
-        // Check for perfect shot (immediate match)
-        if (combo > 0) {
-            gameStats.perfectShots++;
-        }
     }
 }
 
@@ -840,10 +840,11 @@ function handlePointerEnd(e) {
 function createShootEffect() {
     // Create shooting particles
     for (let i = 0; i < 8; i++) {
+        const safeColor = (currentEgg && currentEgg.color) ? currentEgg.color : randomColor();
         particles.push(new Particle(
             shooter.x + (Math.random() - 0.5) * 10,
             shooter.y + (Math.random() - 0.5) * 10,
-            currentEgg.color
+            safeColor
         ));
     }
     
@@ -857,11 +858,15 @@ function createShootEffect() {
 
 // Mouse events
 canvas.addEventListener('mousemove', handlePointerMove);
-canvas.addEventListener('click', handlePointerEnd);
+// Chỉ dùng mousedown để bắn – tránh click gây bắn đúp (mousedown + click)
 
 // Bắn bằng mousedown (trái/phải) và chặn menu chuột phải
 function handleMouseDown(e) {
     if (!isPlaying || shooting) return;
+    // Debounce: khóa bắn trong 80ms để tránh sự kiện kép từ thiết bị/driver
+    if (window.__lastShotTs && performance.now() - window.__lastShotTs < 80) {
+        return;
+    }
     if (e.button === 0 || e.button === 2 || e.buttons > 0) {
         // Recompute aim toward click point
         const rect = canvas.getBoundingClientRect();
@@ -879,6 +884,7 @@ function handleMouseDown(e) {
         }
         createShootEffect();
         shootEgg();
+        window.__lastShotTs = performance.now();
         e.preventDefault();
     }
 }
@@ -901,7 +907,7 @@ if (shooterEl) {
 // Touch events
 canvas.addEventListener('touchstart', handlePointerMove, { passive: false });
 canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
-canvas.addEventListener('touchend', handlePointerEnd, { passive: false });
+canvas.addEventListener('touchend', (e)=>{ handlePointerEnd(e); e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
 // Flags
 let isPaused = false;
@@ -928,12 +934,14 @@ function startGame() {
     
     // Initialize game
     initGrid();
+    setCurrentEgg();
     isPlaying = true;
     gameOver = false;
     
     // Start game loop
-    if (!gameLoopRunning) {
-        gameLoopRunning = true;
+    if (typeof gameLoopRunning === 'undefined') { window.gameLoopRunning = false; }
+    if (!window.gameLoopRunning) {
+        window.gameLoopRunning = true;
         gameLoop();
     }
     
@@ -1020,27 +1028,24 @@ window.addEventListener('pointerdown', () => {
 function showLeaderboard() {
     try {
         if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
-            // Try to get remote leaderboard
-            window.remoteLeaderboard.list('egg-shooter', 10).then(scores => {
+            // Chỉ hiển thị leaderboard ONLINE, không fallback local
+            window.remoteLeaderboard.list('egg-shooter', 10)
+              .then(scores => {
                 let message = '🏆 Top 10 - Egg Shooter\n\n';
-                
-                if (scores && scores.length > 0) {
-                    scores.forEach((score, index) => {
-                        message += `${index + 1}. ${score.user}: ${score.score}\n`;
-                    });
+                if (Array.isArray(scores) && scores.length) {
+                  scores.forEach((row, i) => { message += `${i+1}. ${row.user}: ${row.score}\n`; });
                 } else {
-                    message += 'Chưa có điểm số nào.';
+                  message += 'Chưa có điểm số nào (online).';
                 }
-                
                 alert(message);
-            }).catch(error => {
-                showLocalLeaderboard();
-            });
+              })
+              .catch(err => { alert('Không tải được bảng xếp hạng online: ' + (err?.message || 'Lỗi không xác định')); });
         } else {
+            // Chỉ khi tắt remote mới dùng local
             showLocalLeaderboard();
         }
     } catch (error) {
-        showLocalLeaderboard();
+        alert('Không tải được bảng xếp hạng: ' + (error?.message || 'Lỗi không xác định'));
     }
 }
 
@@ -1083,7 +1088,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isPlaying && window.startGame) window.startGame();
     });
     
-    if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+    if (pauseBtn) pauseBtn.addEventListener('click', () => {
+        if (typeof isPaused === 'boolean') {
+            isPaused = !isPaused;
+        }
+    });
     
     if (restartBtn) restartBtn.addEventListener('click', () => {
         if (window.startGame) window.startGame();

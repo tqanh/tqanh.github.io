@@ -14,9 +14,15 @@
     document.body.appendChild(wrap);
   }
   try{
-    if (!window.remoteLeaderboard) return; // if not configured, do nothing
-    if (!window.remoteLeaderboard.enabled) return; // remote disabled => do nothing
+    // Nếu không cấu hình remote hoặc remote disabled → không chặn
+    if (!window.remoteLeaderboard) return;
+    if (!window.remoteLeaderboard.enabled) return;
+
+    // Cho phép nếu đã có user local (đã đăng nhập ở Hub)
+    const localDisplay = localStorage.getItem('gh_display_name');
+
+    // Nếu chưa có user Supabase và cũng không có user local → chặn
     const uid = await window.remoteLeaderboard.currentUserId();
-    if (!uid) createOverlay();
+    if (!uid && !localDisplay) createOverlay();
   }catch(_){/* ignore */}
 })();

@@ -35,8 +35,12 @@ function ensureInit() {
 		scores[current] = { 'egg-shooter': 0, 'snake': 0, 'memory': 0 };
 		writeJSON('gh_scores', scores);
 	}
-	const leader = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
-	writeJSON('gh_leaderboards', leader);
+	// Nếu cấu hình remoteOnly, không khởi tạo leaderboard local để tránh lưu local
+	const cfg = (window.LEADERBOARD_CONFIG || {});
+	if (!cfg.remoteOnly) {
+		const leader = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
+		writeJSON('gh_leaderboards', leader);
+	}
 }
 
 function listUsers() { ensureInit(); return readJSON('gh_users', []); }
@@ -57,20 +61,38 @@ function getHighScore(gameKey) {
 	return (scores[user] && typeof scores[user][gameKey] === 'number') ? scores[user][gameKey] : 0;
 }
 
+function getDisplayName() {
+    // Ưu tiên tên hiển thị đã đăng nhập ở Hub
+    const name = localStorage.getItem('gh_display_name');
+    if (name && String(name).trim()) return String(name).trim();
+    return getCurrentUser();
+}
+
 async function saveHighScore(gameKey, score) {
 	ensureInit();
-	const user = getCurrentUser();
-	const scores = readJSON('gh_scores', {});
-	if (!scores[user]) scores[user] = { 'egg-shooter': 0, 'snake': 0, 'memory': 0 };
-	if (score > (scores[user][gameKey] || 0)) { scores[user][gameKey] = score; writeJSON('gh_scores', scores); }
+    const displayName = getDisplayName();
+    // Nếu remoteOnly, không lưu local high score
+    const cfg = (window.LEADERBOARD_CONFIG || {});
+    if (!cfg.remoteOnly) {
+        const scores = readJSON('gh_scores', {});
+        if (!scores[displayName]) scores[displayName] = { 'egg-shooter': 0, 'snake': 0, 'memory': 0 };
+        if (score > (scores[displayName][gameKey] || 0)) { scores[displayName][gameKey] = score; writeJSON('gh_scores', scores); }
+    }
 	// Local leaderboard update
-	const boards = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
-	const arr = boards[gameKey] || [];
-	const existingIdx = arr.findIndex(e => e.name === user);
-	if (existingIdx >= 0) arr[existingIdx].score = Math.max(arr[existingIdx].score, score); else arr.push({ name: user, score });
-	arr.sort((a,b) => b.score - a.score); boards[gameKey] = arr.slice(0, 10); writeJSON('gh_leaderboards', boards);
+    if (!cfg.remoteOnly) {
+        const boards = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
+        const arr = boards[gameKey] || [];
+        const existingIdx = arr.findIndex(e => e.name === displayName);
+        if (existingIdx >= 0) arr[existingIdx].score = Math.max(arr[existingIdx].score, score); else arr.push({ name: displayName, score });
+        arr.sort((a,b) => b.score - a.score); boards[gameKey] = arr.slice(0, 10); writeJSON('gh_leaderboards', boards);
+    }
 	// Remote leaderboard (optional)
-	try { if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) { await window.remoteLeaderboard.save(gameKey, user, score); } } catch {}
+    try { 
+        if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) { 
+            const ok = await window.remoteLeaderboard.save(gameKey, displayName, score);
+            if (!ok) console.log('Remote leaderboard save failed, kept local only');
+        } 
+    } catch (e) { console.log('Remote leaderboard error, kept local only:', e?.message || e); }
 	updateHighScoresDisplay(); updateLeaderboards();
 }
 
@@ -83,8 +105,11 @@ async function getLeaderboard(gameKey) {
 			if (Array.isArray(r) && r.length) return r.map(x => ({ name: x.user, score: x.score }));
 		}
 	} catch {}
-	const boards = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
-	return boards[gameKey] || [];
+    // Nếu remoteOnly, không trả về local fallback
+    const cfg = (window.LEADERBOARD_CONFIG || {});
+    if (cfg.remoteOnly) return [];
+    const boards = readJSON('gh_leaderboards', { 'egg-shooter': [], 'snake': [], 'memory': [] });
+    return boards[gameKey] || [];
 }
 
 function loadHighScores() { 

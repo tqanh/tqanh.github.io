@@ -6,8 +6,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="icon" href="https://img.icons8.com/color/48/000000/dinosaur.png">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/dinosaur.png">
+    <link rel="icon" href="../../assets/icons/egg.svg">
+    <link rel="apple-touch-icon" href="../../assets/icons/egg.svg">
     <meta name="theme-color" content="#667eea">
     <title>🎮 Game Bắn Trứng Khủng Long - Cải tiến</title>
     <link rel="stylesheet" href="style.css">
@@ -94,14 +94,66 @@
         </div>
     </div>
     
-    <script src="script.js"></script>
-    <script src="sounds.js"></script>
-    <script src="../../js/config.js"></script>
-    <script src="../../js/remoteLeaderboard.js"></script>
-    <script src="../../js/hub.js"></script>
-    <script src="../../js/auth-guard.js"></script>
+    <script src="script.js?v=2.4.0"></script>
+    <script src="sounds.js?v=2.4.0"></script>
+    <script src="../../js/config.js?v=2.4.0"></script>
+    <script src="../../js/remoteLeaderboard.js?v=2.4.0"></script>
+    <script src="../../js/hub.js?v=2.4.0"></script>
+    <script src="../../js/auth-guard.js?v=2.4.0"></script>
     
     <script>
+        // Đồng bộ tên hiển thị với ID đăng nhập Supabase (nếu có)
+        (function syncDisplayNameFromAuth(){
+            document.addEventListener('DOMContentLoaded', async function(){
+                try{
+                    if (!window.remoteLeaderboard || !window.remoteLeaderboard.enabled) return;
+                    const uid = await window.remoteLeaderboard.currentUserId();
+                    if (!uid) return;
+                    // Supabase lưu email dạng id@example.org → cắt trước @ làm ID
+                    // Ở đây ta đã lưu displayName khi đăng nhập (remoteLeaderboard.signInUserId),
+                    // nhưng đồng bộ lại cho chắc.
+                    const current = (localStorage.getItem('gh_display_name') || '').trim();
+                    if (!current) return;
+                    localStorage.setItem('gh_display_name', current);
+                }catch(_){}
+            });
+        })();
+        // Yêu cầu đặt tên nếu chưa có (chỉ khi không có ID)
+        (function ensureDisplayName(){
+            document.addEventListener('DOMContentLoaded', function(){
+                try{
+                    const key = 'gh_display_name';
+                    const current = (localStorage.getItem(key) || '').trim();
+                    if (current) return;
+
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100000;';
+                    const box = document.createElement('div');
+                    box.style.cssText = 'background:#fff;border-radius:14px;max-width:420px;width:92vw;padding:22px 20px;box-shadow:0 20px 40px rgba(0,0,0,.3);text-align:center;';
+                    box.innerHTML = '<h3 style="margin:0 0 8px;color:#1976d2">Đặt tên của bạn</h3>'+
+                        '<p style="margin:0 0 12px;color:#555">Tên này sẽ hiển thị trên bảng xếp hạng (dùng ID của bạn).</p>'+
+                        '<input id="__gh_name_input" type="text" placeholder="Nhập tên (2-20 ký tự)" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:16px;">'+
+                        '<div style="margin-top:14px;display:flex;gap:10px;justify-content:center">'+
+                        '<button id="__gh_name_btn" style="padding:10px 16px;border:none;background:#1976d2;color:#fff;border-radius:10px;cursor:pointer">Lưu</button>'+
+                        '</div>';
+                    overlay.appendChild(box);
+                    document.body.appendChild(overlay);
+
+                    const input = box.querySelector('#__gh_name_input');
+                    const btn = box.querySelector('#__gh_name_btn');
+                    const accept = () => {
+                        let v = (input.value || '').trim();
+                        v = v.replace(/[^\w\s-]/g,'').slice(0,20);
+                        if (v.length < 2) { input.focus(); return; }
+                        localStorage.setItem(key, v);
+                        document.body.removeChild(overlay);
+                    };
+                    btn.onclick = accept;
+                    input.onkeypress = (e)=>{ if (e.key==='Enter') accept(); };
+                    setTimeout(()=> input.focus(), 50);
+                }catch(_){}
+            });
+        })();
         // Update level display
         function updateLevelDisplay(level) {
             const levelValue = document.getElementById('level-value');

@@ -111,6 +111,46 @@ body {
     border-bottom: 1px solid #eee;
 }
 
+/* Loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Button disabled state */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Error message styling */
+.error-message {
+    background: linear-gradient(45deg, #ff5252, #d32f2f);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
     :root {

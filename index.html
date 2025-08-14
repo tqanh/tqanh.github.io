@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Game Hub - Bộ sưu tập game đa nền tảng với Egg Shooter, Snake và Memory Cards">
+    <meta name="keywords" content="game, egg shooter, snake, memory cards, html5 games">
+    <meta name="author" content="Game Hub">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./assets/icons/egg.svg">
+    <link rel="apple-touch-icon" href="./assets/icons/egg.svg">
+    <link rel="shortcut icon" href="./assets/icons/egg.svg">
     <title>Game Hub - Đăng nhập</title>
     <link rel="stylesheet" href="styles/main.css">
     <style>
@@ -245,27 +259,28 @@
             <div class="user-info">
                 <span id="userDisplay">Chào mừng!</span>
                 <button onclick="logout()" style="margin-left: 15px; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Đăng xuất</button>
+                
             </div>
         </div>
         
         <div class="hub-container">
             <div class="games-grid">
                 <div class="game-card">
-                    <img src="assets/icons/egg.svg?v=2.1.0" alt="Egg Shooter">
+                    <img src="assets/icons/egg.svg?v=2.4.0" alt="Egg Shooter">
                     <h3>Egg Shooter</h3>
                     <p>Match and shoot colorful eggs in this addictive bubble shooter game!</p>
                     <a href="games/egg-shooter/" class="play-button">Play Now</a>
                 </div>
                 
                 <div class="game-card">
-                    <img src="assets/icons/snake.svg?v=2.1.0" alt="Snake">
+                    <img src="assets/icons/snake.svg?v=2.4.0" alt="Snake">
                     <h3>Snake</h3>
                     <p>Classic snake game with modern graphics and multiple difficulty levels.</p>
                     <a href="games/snake/" class="play-button">Play Now</a>
                 </div>
                 
                 <div class="game-card">
-                    <img src="assets/icons/memory.svg?v=2.1.0" alt="Memory Cards">
+                    <img src="assets/icons/memory.svg?v=2.4.0" alt="Memory Cards">
                     <h3>Memory Cards</h3>
                     <p>Test your memory by matching pairs of cards. Multiple themes available!</p>
                     <a href="games/memory/" class="play-button">Play Now</a>
@@ -279,9 +294,9 @@
         Loading...
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/remoteLeaderboard.js?v=5"></script>
-    <script src="js/hub.js"></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/remoteLeaderboard.js?v=2.4.0" defer></script>
+    <script src="js/hub.js" defer></script>
     <script>
         let isSignUpMode = false;
         
@@ -334,7 +349,12 @@
         }
         
         function updateUserDisplay() {
-            const displayName = localStorage.getItem('gh_display_name') || 'Người chơi';
+            let displayName = localStorage.getItem('gh_display_name') || 'Người chơi';
+            // Nếu đang đăng nhập Supabase, ưu tiên userId đã dùng đăng nhập
+            try{
+                const cached = localStorage.getItem('gh_display_name');
+                if (cached && cached.trim()) displayName = cached.trim();
+            }catch(_){}
             document.getElementById('userDisplay').textContent = `Chào mừng, ${displayName}!`;
         }
         
@@ -400,6 +420,8 @@
             document.getElementById('signInPass').value = '';
         }
         
+        
+        
         // Check if already logged in
         async function checkAuthStatus() {
             try {
@@ -421,6 +443,8 @@
                 console.log('Auth check failed:', error);
             }
         }
+        
+        
         
         // Event listeners
         document.getElementById('btnSignUp').onclick = async () => {
@@ -446,7 +470,9 @@
                 await window.remoteLeaderboard.signUpUserId(user, pass, user);
                 showHub();
             } catch (error) {
-                showError('Đăng ký lỗi: ' + error.message);
+                const msg = 'Đăng ký lỗi: ' + (error?.message || 'Không xác định');
+                showError(msg);
+                try { alert(msg); } catch {}
                 const btn = document.getElementById('btnSignUp');
                 btn.disabled = false;
                 btn.innerHTML = 'Đăng ký';
@@ -471,7 +497,9 @@
                 await window.remoteLeaderboard.signInUserId(user, pass);
                 showHub();
             } catch (error) {
-                showError('Đăng nhập lỗi: ' + error.message);
+                const msg = 'Đăng nhập lỗi: ' + (error?.message || 'Không xác định');
+                showError(msg);
+                try { alert(msg); } catch {}
                 const btn = document.getElementById('btnSignIn');
                 btn.disabled = false;
                 btn.innerHTML = 'Đăng nhập';
@@ -519,33 +547,21 @@
             }
         }
         
-        // Service Worker
+        // Service Worker - Đã sửa để tránh vòng lặp vô hạn
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function () {
-                navigator.serviceWorker.register('./sw.js?v=2.1.0')
-                    .then(registration => {
-                        console.log('SW registered successfully:', registration);
-                        
-                        // Force update if new version
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('New SW version available, reloading...');
-                                    // New version available, reload to activate
-                                    window.location.reload();
-                                }
-                            });
-                        });
-                        
-                        // Check for updates
-                        registration.update();
-                    })
-                    .catch(error => {
-                        console.log('SW registration failed:', error);
-                        // Continue without service worker
-                    });
-            });
+            // Chỉ đăng ký service worker, không tự động reload
+            navigator.serviceWorker.register('./sw.js?v=2.4.0')
+                .then(registration => {
+                    console.log('SW registered successfully:', registration);
+                    console.log('Service Worker version: 2.4.0');
+                    
+                    // Không tự động reload để tránh vòng lặp
+                    // Chỉ log thông tin, không thực hiện action nào khác
+                })
+                .catch(error => {
+                    console.log('SW registration failed:', error);
+                    // Tiếp tục mà không có service worker
+                });
         }
     </script>
 </body>

@@ -25,6 +25,7 @@ function updateMemoryHighScore() {
 }
 
 function startMemoryGame() {
+    isPaused = false;
 	deck = [...cards, ...cards];
 	shuffle(deck);
 	flipped = [];
@@ -34,6 +35,7 @@ function startMemoryGame() {
 	lockBoard = false;
 	renderMemory();
 	updateMemoryHighScore();
+    updateMemoryMainBtn();
 }
 
 function renderMemory() {
@@ -80,6 +82,7 @@ function flipCard(idx) {
 
 function finishMemory() {
 	isPlaying = false;
+    isPaused = false;
 	if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(200);
 	if (window.gameHub && window.gameHub.saveHighScore) {
 		const score = Math.max(1, (cards.length * 2 * 2) - moves); // higher is better
@@ -87,12 +90,14 @@ function finishMemory() {
 		updateMemoryHighScore();
 	}
     showMemoryModal('Bạn đã thắng! Lượt: ' + moves);
+    updateMemoryMainBtn();
 }
 
 // Toggle pause helper for UI
 function memoryPauseToggle(){
     if (!isPlaying) return false;
     isPaused = !isPaused; 
+    updateMemoryMainBtn();
     return isPaused;
 }
 
@@ -123,13 +128,45 @@ function showMemoryModal(msg) {
 }
 
 // Auto-start for usability
+// Chuyển sang cơ chế giống egg-shooter: không auto-start nếu người dùng bấm nút
 if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', startMemoryGame);
+    document.addEventListener('DOMContentLoaded', () => {
+        wireMemoryMainButton();
+        // Auto-start khi tương tác đầu tiên nhưng bỏ qua click vào nút chính
+        const once = (e) => {
+            const t = e && e.target ? e.target : null;
+            if (t && (t.id === 'memoryMainBtn' || (typeof t.closest==='function' && t.closest('#memoryMainBtn')))) {
+                window.removeEventListener('pointerdown', once, true);
+                return;
+            }
+            if (!isPlaying) startMemoryGame();
+            window.removeEventListener('pointerdown', once, true);
+        };
+        window.addEventListener('pointerdown', once, true);
+        updateMemoryMainBtn();
+    });
 } else {
-	startMemoryGame();
+    wireMemoryMainButton();
+    updateMemoryMainBtn();
+}
+
+function wireMemoryMainButton(){
+    const btn = document.getElementById('memoryMainBtn');
+    if (!btn) return;
+    btn.onclick = function(){
+        if (!isPlaying) startMemoryGame();
+        else memoryPauseToggle();
+    };
+}
+
+function updateMemoryMainBtn(){
+    const btn = document.getElementById('memoryMainBtn');
+    if (!btn) return;
+    btn.textContent = !isPlaying ? 'Chơi ngay' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng');
 }
 
 // Expose
 window.startMemoryGame = startMemoryGame;
 window.updateMemoryHighScore = updateMemoryHighScore;
 window.memoryPauseToggle = memoryPauseToggle;
+window.updateMemoryMainBtn = updateMemoryMainBtn;

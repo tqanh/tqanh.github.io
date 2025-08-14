@@ -1,4 +1,5 @@
-const cards = ['🍎','🍌','🍇','🍉','🍓','🍒','🍍','🥝'];
+const BASE_CARDS = ['🍎','🍌','🍇','🍉','🍓','🍒','🍍','🥝'];
+let cards = [...BASE_CARDS];
 let deck = [];
 let flipped = [];
 let matched = [];
@@ -26,7 +27,7 @@ function updateMemoryHighScore() {
 
 function startMemoryGame() {
     isPaused = false;
-	deck = [...cards, ...cards];
+    deck = [...cards, ...cards];
 	shuffle(deck);
 	flipped = [];
 	matched = [];
@@ -41,7 +42,13 @@ function startMemoryGame() {
 function renderMemory() {
 	const board = document.getElementById('memory-board');
 	if (!board) return;
-	board.innerHTML = '';
+    board.innerHTML = '';
+    // Set grid columns theo số lượng thẻ (đồng bộ mức độ)
+    const total = deck.length;
+    let cols = 4; // 4x4 cho 16 thẻ
+    if (total === 20) cols = 5;   // 5x4 cho 20 thẻ
+    else if (total === 30) cols = 6; // 6x5 cho 30 thẻ
+    board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 	deck.forEach((card, idx) => {
 		const div = document.createElement('div');
 		div.className = 'memory-card';
@@ -132,6 +139,7 @@ function showMemoryModal(msg) {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         wireMemoryMainButton();
+        initMemoryOptionsUI();
         // Auto-start khi tương tác đầu tiên nhưng bỏ qua click vào nút chính
         const once = (e) => {
             const t = e && e.target ? e.target : null;
@@ -147,6 +155,7 @@ if (document.readyState === 'loading') {
     });
 } else {
     wireMemoryMainButton();
+    initMemoryOptionsUI();
     updateMemoryMainBtn();
 }
 
@@ -163,6 +172,52 @@ function updateMemoryMainBtn(){
     const btn = document.getElementById('memoryMainBtn');
     if (!btn) return;
     btn.textContent = !isPlaying ? 'Chơi ngay' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng');
+}
+
+// Difficulty & Theme handling (sync style với các game khác)
+function initMemoryOptionsUI(){
+    try{
+        const diffSel = document.getElementById('memoryDifficulty');
+        const themeSel = document.getElementById('memoryTheme');
+        if (diffSel){
+            diffSel.onchange = function(){
+                applyMemoryDifficulty(diffSel.value);
+            };
+            // init from current value
+            applyMemoryDifficulty(diffSel.value);
+        }
+        if (themeSel){
+            themeSel.onchange = function(){
+                applyMemoryTheme(themeSel.value);
+            }
+        }
+    }catch(_){ }
+}
+
+function applyMemoryDifficulty(level){
+    // Điều chỉnh số cặp thẻ theo mức độ
+    // easy: 4x4 (8 cặp); normal: 5x4 (10 cặp); hard: 6x5 (15 cặp) nếu màn hình cho phép
+    const easy = [...BASE_CARDS];
+    const normal = [...BASE_CARDS, '🥑','🥥'];
+    const hard = [...BASE_CARDS, '🥑','🥥','🧀','🍗','🥨'];
+    if (level === 'easy') cards = easy;
+    else if (level === 'hard') cards = hard;
+    else cards = normal;
+    // Nếu đang chơi, khởi động lại để áp dụng mức mới
+    if (isPlaying) startMemoryGame();
+}
+
+function applyMemoryTheme(theme){
+    const board = document.getElementById('memory-board');
+    if (!board) return;
+    const body = document.body;
+    if (theme === 'dark'){
+        body.style.background = 'linear-gradient(135deg,#0f172a 0%, #111827 100%)';
+    } else if (theme === 'neon'){
+        body.style.background = 'linear-gradient(135deg,#001219 0%, #0a9396 100%)';
+    } else {
+        body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    }
 }
 
 // Expose

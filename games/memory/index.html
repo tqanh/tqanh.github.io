@@ -153,6 +153,22 @@
 				<button onclick="showMemoryLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
 				<a href="../../index.html" class="back-button">Về Hub</a>
 			</div>
+			<div class="actions" style="gap:8px;align-items:center;">
+				<label>⚙️ Mức độ
+					<select id="memoryDifficulty" style="margin-left:6px;">
+						<option value="easy">Dễ</option>
+						<option value="normal" selected>Bình thường</option>
+						<option value="hard">Khó</option>
+					</select>
+				</label>
+				<label style="margin-left:8px;">🎨 Giao diện
+					<select id="memoryTheme" style="margin-left:6px;">
+						<option value="classic">Cổ điển</option>
+						<option value="neon">Neon</option>
+						<option value="dark">Tối</option>
+					</select>
+				</label>
+			</div>
 			<div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
 		</div>
 	</div>

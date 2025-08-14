@@ -8,6 +8,9 @@ const currentEggDiv = document.getElementById('current-egg');
 const RADIUS = 25;
 const ROWS = Math.floor(canvas.height / (RADIUS * 2));
 const COLS = Math.floor(canvas.width / (RADIUS * 2));
+// Giữ trạng thái lệch cột của lưới lục giác (0 hoặc 1). Khi dồn hàng, trạng thái sẽ đảo.
+let rowParityOffset = 0;
+function isOddRow(row){ return ((row + rowParityOffset) % 2) === 1; }
 
 let grid = [];
 let shooter = { x: canvas.width / 2, y: canvas.height - 80 };
@@ -182,7 +185,7 @@ function drawGrid() {
         for (let col = 0; col < COLS; col++) {
             const egg = rowArr[col];
             if (egg) {
-                drawEgg(col * RADIUS * 2 + (row % 2 ? RADIUS : 0) + RADIUS, row * RADIUS * 2 + RADIUS, egg.color, egg.fade !== undefined ? egg.fade : 1.0);
+                drawEgg(col * RADIUS * 2 + (isOddRow(row) ? RADIUS : 0) + RADIUS, row * RADIUS * 2 + RADIUS, egg.color, egg.fade !== undefined ? egg.fade : 1.0);
             }
         }
     }
@@ -236,7 +239,7 @@ function animateEggRemoval(match) {
     match.forEach(([r, c]) => {
         const egg = grid[r][c];
         if (egg) {
-            const x = c * RADIUS * 2 + (r % 2 ? RADIUS : 0) + RADIUS;
+            const x = c * RADIUS * 2 + (isOddRow(r) ? RADIUS : 0) + RADIUS;
             const y = r * RADIUS * 2 + RADIUS;
             createExplosion(x, y, egg.color, 6);
             
@@ -282,7 +285,7 @@ function animateEggRemoval(match) {
             return particle.life > 0;
         });
         
-        drawGrid();
+        requestDraw();
         if (stillFading) {
             requestAnimationFrame(fade);
         } else {
@@ -433,6 +436,8 @@ function shootEgg() {
 function updateShotEgg() {
     if (!shotEgg) return;
     
+    // Lưu vị trí trước khi di chuyển để ước lượng điểm va chạm ổn định
+    const prevX = shotEgg.x, prevY = shotEgg.y;
     shotEgg.x += shotEgg.dx;
     shotEgg.y += shotEgg.dy;
     
@@ -458,11 +463,17 @@ function updateShotEgg() {
         for (let col = 0; col < COLS; col++) {
             const egg = grid[row][col];
             if (egg) {
-                let cx = col * RADIUS * 2 + (row % 2 ? RADIUS : 0) + RADIUS;
+                let cx = col * RADIUS * 2 + (isOddRow(row) ? RADIUS : 0) + RADIUS;
                 let cy = row * RADIUS * 2 + RADIUS;
                 let dist = Math.hypot(shotEgg.x - cx, shotEgg.y - cy);
                 if (dist < RADIUS * 2 - 2) {
-                    placeEgg(row, col);
+                    // Ước lượng điểm va chạm trên biên hình tròn của quả trứng bị chạm
+                    const vx = shotEgg.x - cx, vy = shotEgg.y - cy;
+                    const len = Math.hypot(vx, vy) || 1;
+                    const rHit = (RADIUS * 2 - 2);
+                    const ix = cx + (vx / len) * rHit;
+                    const iy = cy + (vy / len) * rHit;
+                    placeEgg(row, col, ix, iy);
                     hit = true;
                     break;
                 }
@@ -476,7 +487,7 @@ function updateShotEgg() {
         let col = Math.floor((shotEgg.x - RADIUS) / (RADIUS * 2));
         if (col < 0) col = 0;
         if (col >= COLS) col = COLS - 1;
-        placeEgg(0, col);
+        placeEgg(0, col, shotEgg.x, shotEgg.y);
         hit = true;
     }
     
@@ -600,43 +611,53 @@ function activateSpeed() {
     }
 }
 
-function placeEgg(row, col) {
-    // Find the best position to place the egg
-    let placed = false;
-    let placedRow = row;
-    let placedCol = col;
-    
-    // Try to place in the exact position first
-    if (!grid[row][col]) {
-        grid[row][col] = { color: currentEgg.color };
-        placed = true;
-        placedRow = row; placedCol = col;
-    } else {
-        // Find nearby empty positions
-        for (let r = row; r < ROWS; r++) {
-            for (let c = Math.max(0, col - 1); c <= Math.min(COLS - 1, col + 1); c++) {
-                if (!grid[r][c]) {
-                    grid[r][c] = { color: currentEgg.color };
-                    placed = true;
-                    placedRow = r; placedCol = c;
-                    break;
-                }
-            }
-            if (placed) break;
-        }
+function getCellCenter(row, col) {
+    const x = col * RADIUS * 2 + (isOddRow(row) ? RADIUS : 0) + RADIUS;
+    const y = row * RADIUS * 2 + RADIUS;
+    return [x, y];
+}
+
+function getNeighbors(row, col) {
+    const dirs = [
+        [-1, 0], [1, 0], [0, -1], [0, 1],
+        [isOddRow(row) ? -1 : 1, -1], [isOddRow(row) ? -1 : 1, 1]
+    ];
+    const res = [];
+    for (const [dr, dc] of dirs) {
+        const r = row + dr, c = col + dc;
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) res.push([r, c]);
     }
-    
-    if (placed) {
-        // Check for matches at the ACTUAL placed cell
-        checkMatch(placedRow, placedCol);
-        drawGrid();
-        checkLose();
+    return res;
+}
+
+function placeEgg(row, col, hitX, hitY) {
+    // Chọn ô trống gần nhất quanh điểm va chạm để đặt trứng
+    let candidates = [];
+    if (!grid[row][col]) candidates.push([row, col]);
+    candidates = candidates.concat(getNeighbors(row, col).filter(([r, c]) => !grid[r][c]));
+    if (!candidates.length) return; // không còn chỗ trống hợp lệ
+
+    let best = candidates[0];
+    let bestDist = Infinity;
+    for (const [r, c] of candidates) {
+        const [cx, cy] = getCellCenter(r, c);
+        const d = Math.hypot((hitX ?? shotEgg.x) - cx, (hitY ?? shotEgg.y) - cy);
+        if (d < bestDist) { bestDist = d; best = [r, c]; }
     }
+
+    const [pr, pc] = best;
+    grid[pr][pc] = { color: currentEgg.color };
+
+    // Kiểm tra match tại đúng ô vừa đặt
+    checkMatch(pr, pc);
+    requestDraw();
+    checkLose();
 }
 
 function moveRowsDown() {
+    // Dồn hàng theo ma trận lưới lục giác: giữ nguyên lệch cột giữa hàng chẵn/lẻ
     for (let row = ROWS - 1; row > 0; row--) {
-        grid[row] = [...grid[row - 1]];
+        grid[row] = grid[row - 1] ? [...grid[row - 1]] : Array(COLS).fill(null);
     }
     grid[0] = Array(COLS).fill(null);
     
@@ -661,6 +682,8 @@ function addNewTopRow() {
     }
     
     grid[0] = newRow;
+    // Sau mỗi lần thêm hàng mới, đảo offset chẵn/lẻ để duy trì pattern ổn định
+    rowParityOffset = (rowParityOffset ^ 1);
     
     // Occasionally add new power-ups
     if (Math.random() < 0.3) {
@@ -852,7 +875,7 @@ function createShootEffect() {
     shooter.y += 2;
     setTimeout(() => {
         shooter.y -= 2;
-        drawGrid();
+        requestDraw();
     }, 100);
 }
 
@@ -967,7 +990,7 @@ function gameLoop() {
     if (isPlaying && !isPaused && !isFrozen && now - lastMoveDown > MOVE_DOWN_INTERVAL) {
         moveRowsDown();
         addNewTopRow();
-        drawGrid();
+        requestDraw();
         checkLose();
         lastMoveDown = now;
     }

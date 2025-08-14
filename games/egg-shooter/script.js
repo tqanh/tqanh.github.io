@@ -193,14 +193,22 @@ function createExplosion(x, y, color, count = 8) {
 }
 
 function drawGrid() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#e3f2fd');
-    gradient.addColorStop(1, '#bbdefb');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Theme background
+    if (eggTheme==='dark') {
+        ctx.fillStyle = '#0d1b2a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else if (eggTheme==='neon') {
+        ctx.fillStyle = '#001219';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Gradient background for classic
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#e3f2fd');
+        gradient.addColorStop(1, '#bbdefb');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     
     // Draw grid lines (subtle)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
@@ -952,6 +960,7 @@ canvas.addEventListener('touchend', (e)=>{ handlePointerEnd(e); e.preventDefault
 let isPaused = false;
 let isFrozen = false;
 let gameOver = false; // Added gameOver flag
+let eggTheme = 'classic';
 
 // Define startGame and expose
 function startGame() {
@@ -1049,15 +1058,7 @@ if (typeof window.gameLoop === 'function') {
     });
 }
 
-// Reinforce Start/Restart bindings and auto-start on first interaction
-if (startBtn) {
-    startBtn.onclick = () => window.startGame && window.startGame();
-    startBtn.addEventListener('click', (e) => { e.preventDefault(); if (window.startGame) window.startGame(); });
-}
-if (restartBtn) {
-    restartBtn.onclick = () => window.startGame && window.startGame();
-    restartBtn.addEventListener('click', (e) => { e.preventDefault(); if (window.startGame) window.startGame(); });
-}
+// Single button (eggMainBtn) handled in DOMContentLoaded block
 // Auto-start on first user interaction in case button binding fails
 window.addEventListener('pointerdown', () => {
     if (!isPlaying && window.startGame) window.startGame();
@@ -1117,40 +1118,21 @@ window.showLeaderboard = showLeaderboard;
 
 // Button event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const restartBtn = document.getElementById('restartBtn');
+    const eggBtn = document.getElementById('eggMainBtn');
     const leaderboardBtn = document.getElementById('leaderboardBtn');
     const backBtn = document.getElementById('backBtn');
-    
-    if (startBtn) startBtn.addEventListener('click', () => {
-        if (!isPlaying && window.startGame) window.startGame();
-    });
-    
-    if (pauseBtn) pauseBtn.addEventListener('click', () => {
-        if (typeof isPaused === 'boolean') {
-            isPaused = !isPaused;
-            // Cập nhật nhãn nút
-            pauseBtn.textContent = isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
-        }
-    });
-    
-    if (restartBtn) restartBtn.addEventListener('click', () => {
-        if (window.startGame) window.startGame();
-    });
-    
+    if (eggBtn) eggBtn.onclick = function(){ if (!isPlaying) { if(window.startGame) window.startGame(); updateEggMainBtn(); } else { isPaused = !isPaused; updateEggMainBtn(); } };
     if (leaderboardBtn) leaderboardBtn.addEventListener('click', showLeaderboard);
-    
-    if (backBtn) backBtn.addEventListener('click', () => {
-        location.href = '../../index.html';
-    });
-    
-    // Auto-start on first click/touch
-    document.addEventListener('click', function() {
-        if (!isPlaying && window.startGame) window.startGame();
-    }, { once: true });
-    
-    document.addEventListener('touchstart', function() {
-        if (!isPlaying && window.startGame) window.startGame();
-    }, { once: true });
+    if (backBtn) backBtn.addEventListener('click', () => { location.href='../../index.html'; });
+    updateEggMainBtn();
+    // Auto-start on first pointer interaction for convenience
+    window.addEventListener('pointerdown', () => { if (!isPlaying && window.startGame) window.startGame(); updateEggMainBtn(); }, { once: true });
 });
+
+function updateEggMainBtn(){ const b=document.getElementById('eggMainBtn'); if(!b) return; b.textContent = !isPlaying ? '🎯 Bắt đầu' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng'); }
+window.updateEggMainBtn = updateEggMainBtn;
+
+// Theme & speed setters exposed for options UI
+function setEggTheme(v){ eggTheme = v || 'classic'; requestDraw(); }
+function setEggFallSpeed(v){ const map = { slow: 6500, normal: 5000, fast: 3600 }; MOVE_DOWN_INTERVAL = map[v] || 5000; }
+window.setEggTheme = setEggTheme; window.setEggFallSpeed = setEggFallSpeed;

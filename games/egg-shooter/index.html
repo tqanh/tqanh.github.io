@@ -37,13 +37,11 @@
             </div>
         </div>
         
-        <div class="game-controls">
-            <button id="startBtn" class="game-button">🎯 Bắt đầu</button>
-            <button id="pauseBtn" class="game-button">⏸️ Tạm dừng</button>
-            <button id="restartBtn" class="game-button" style="display: none;">🔄 Chơi lại</button>
-            <button id="leaderboardBtn" class="game-button leaderboard-btn">🏆 Bảng xếp hạng</button>
-            <button id="backBtn" class="game-button back-btn">🏠 Về Hub</button>
-        </div>
+            <div class="game-controls">
+                <button id="eggMainBtn" class="game-button">🎯 Bắt đầu</button>
+                <button id="leaderboardBtn" class="game-button leaderboard-btn">🏆 Bảng xếp hạng</button>
+                <button id="backBtn" class="game-button back-btn">🏠 Về Hub</button>
+            </div>
         
         <div id="score">
             <p>🏆 Điểm: <span id="score-value">0</span></p>
@@ -57,7 +55,7 @@
             <p>📱 <strong>Mobile:</strong> Vuốt để điều khiển nhanh</p>
         </div>
         
-        <div id="power-up-info">
+            <div id="power-up-info">
             <h3>💎 Power-ups:</h3>
             <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 15px 0;">
                 <div style="text-align: center;">
@@ -102,6 +100,38 @@
     <script src="../../js/auth-guard.js?v=2.4.0"></script>
     
     <script>
+        // Options: theme + tốc độ rơi
+        (function addOptions(){
+            document.addEventListener('DOMContentLoaded', function(){
+                try{
+                    const controls = document.querySelector('.game-controls');
+                    if (!controls) return;
+                    const optWrap = document.createElement('div');
+                    optWrap.style.cssText = 'margin-top:8px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; color:#333;';
+                    optWrap.innerHTML = `
+                        <label>🎨 Giao diện
+                            <select id="eggTheme" style="margin-left:6px;">
+                                <option value="classic">Classic</option>
+                                <option value="neon">Neon</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </label>
+                        <label>⚙️ Tốc độ rơi
+                            <select id="eggSpeed" style="margin-left:6px;">
+                                <option value="slow">Chậm</option>
+                                <option value="normal" selected>Bình thường</option>
+                                <option value="fast">Nhanh</option>
+                            </select>
+                        </label>
+                    `;
+                    controls.after(optWrap);
+                    const th = document.getElementById('eggTheme');
+                    const sp = document.getElementById('eggSpeed');
+                    if (th) th.onchange = ()=>{ if (window.setEggTheme) setEggTheme(th.value); };
+                    if (sp) sp.onchange = ()=>{ if (window.setEggFallSpeed) setEggFallSpeed(sp.value); };
+                }catch(_){}}
+            );
+        })();
         // Đồng bộ tên hiển thị với ID đăng nhập Supabase (nếu có)
         (function syncDisplayNameFromAuth(){
             document.addEventListener('DOMContentLoaded', async function(){

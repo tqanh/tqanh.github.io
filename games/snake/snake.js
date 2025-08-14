@@ -5,10 +5,13 @@ const rows = 20;
 const cols = 20;
 let snake = [{x: 10, y: 10}];
 let direction = 'RIGHT';
+let nextDirection = 'RIGHT';
 let food = {x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows)};
 let score = 0;
 let isPlaying = false;
 let isPaused = false;
+let allowWrap = false; // walls vs wrap option
+let theme = 'classic';
 
 // Responsive sizing
 function resizeGame() {
@@ -43,10 +46,13 @@ let baseStepMs = 200; // slower default
 let stepMs = baseStepMs; // lower = faster
 
 function draw() {
-	ctx.fillStyle = '#e0f7fa';
+    // Theme background
+    if (theme === 'classic') ctx.fillStyle = '#e0f7fa';
+    else if (theme === 'dark') ctx.fillStyle = '#0d1b2a';
+    else if (theme === 'neon') ctx.fillStyle = '#001219';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	// Draw grid (light)
-	ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+    ctx.strokeStyle = theme==='dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
 	for (let x = 0; x <= cols; x++) {
 		ctx.beginPath();
 		ctx.moveTo(x*box, 0);
@@ -61,13 +67,15 @@ function draw() {
 	}
 	// Draw snake
 	for (let i = 0; i < snake.length; i++) {
-		ctx.fillStyle = i === 0 ? '#388e3c' : '#81c784';
+        if (theme === 'neon') ctx.fillStyle = i===0 ? '#00e676' : '#69f0ae';
+        else if (theme === 'dark') ctx.fillStyle = i===0 ? '#90caf9' : '#64b5f6';
+        else ctx.fillStyle = i === 0 ? '#388e3c' : '#81c784';
 		ctx.fillRect(snake[i].x*box, snake[i].y*box, box, box);
-		ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = theme==='dark' ? '#263238' : '#fff';
 		ctx.strokeRect(snake[i].x*box, snake[i].y*box, box, box);
 	}
 	// Draw food
-	ctx.fillStyle = '#fbc02d';
+    ctx.fillStyle = theme==='neon' ? '#ffd166' : '#fbc02d';
 	ctx.beginPath();
 	ctx.arc(food.x*box+box/2, food.y*box+box/2, box/2, 0, 2*Math.PI);
 	ctx.fill();
@@ -76,18 +84,32 @@ function draw() {
 	if (scoreEl) scoreEl.textContent = String(score);
 	const stateEl = document.getElementById('state-badge');
 	if (stateEl) stateEl.textContent = isPlaying ? (isPaused ? 'Paused' : 'Playing') : 'Ready';
+
+    // Paused overlay
+    if (isPlaying && isPaused) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 28px system-ui, -apple-system, Segoe UI, Roboto';
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSED', canvas.width/2, canvas.height/2);
+        ctx.restore();
+    }
 }
 
+let __AC = null; // reuse a single AudioContext to avoid limits
 function playBeep(freq = 520, dur = 0.05) {
 	try {
-		const AC = window.AudioContext || window.webkitAudioContext;
-		if (!AC) return;
-		const ac = new AC();
-		const o = ac.createOscillator();
-		const g = ac.createGain();
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        if (!__AC) __AC = new AC();
+        const ac = __AC;
+        const o = ac.createOscillator();
+        const g = ac.createGain();
 		o.connect(g); g.connect(ac.destination);
 		o.frequency.value = freq;
-		g.gain.setValueAtTime(0.15, ac.currentTime);
+        g.gain.setValueAtTime(0.12, ac.currentTime);
 		g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
 		o.start(); o.stop(ac.currentTime + dur);
 	} catch {}
@@ -117,7 +139,9 @@ function gameLoop(currentTime) {
 	if (accumulatorMs >= stepMs) {
 		accumulatorMs = 0;
 		
-		// Move snake
+        // Apply queued direction once per step then move snake
+        direction = nextDirection;
+        // Move snake
 		const head = {x: snake[0].x, y: snake[0].y};
 		switch(direction) {
 			case 'UP': head.y--; break;
@@ -126,11 +150,18 @@ function gameLoop(currentTime) {
 			case 'RIGHT': head.x++; break;
 		}
 		
-		// Check collision with walls
-		if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
-			gameOver();
-			return;
-		}
+        // Check collision with walls or wrap-around
+        if (allowWrap) {
+            if (head.x < 0) head.x = cols - 1;
+            if (head.x >= cols) head.x = 0;
+            if (head.y < 0) head.y = rows - 1;
+            if (head.y >= rows) head.y = 0;
+        } else {
+            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+                gameOver();
+                return;
+            }
+        }
 		
 		// Check collision with self
 		if (snake.some(s => s.x === head.x && s.y === head.y)) {
@@ -160,16 +191,23 @@ function gameLoop(currentTime) {
 
 function gameOver() {
 	isPlaying = false;
+    updateSnakeMainButtonUI();
 	showSnakeModal(`Game Over! Điểm số: ${score}`);
 }
 
 document.addEventListener('keydown', e => {
-	if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
-	if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
-	if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
-	if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
-	if (e.code === 'Space') { if (!isPlaying) startSnakeGame(); }
-	if (e.code === 'KeyP') { if (isPlaying) { isPaused = !isPaused; draw(); } }
+    // Prevent scrolling on arrow/space
+    if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+    // Queue direction (no 180-degree)
+    const opposites = { LEFT:'RIGHT', RIGHT:'LEFT', UP:'DOWN', DOWN:'UP' };
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { if (direction !== 'RIGHT') nextDirection = 'LEFT'; }
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { if (direction !== 'LEFT') nextDirection = 'RIGHT'; }
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { if (direction !== 'DOWN') nextDirection = 'UP'; }
+    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') { if (direction !== 'UP') nextDirection = 'DOWN'; }
+    if (e.code === 'Space') {
+        if (!isPlaying) startSnakeGame(); else setPaused(!isPaused);
+    }
+    if (e.code === 'KeyP') { if (isPlaying) setPaused(!isPaused); }
 });
 
 let touchStartX = 0, touchStartY = 0;
@@ -183,11 +221,11 @@ canvas.addEventListener('touchend', function(e) {
 	const dx = t.clientX - touchStartX;
 	const dy = t.clientY - touchStartY;
 	if (Math.abs(dx) > Math.abs(dy)) {
-		if (dx > 20 && direction !== 'LEFT') direction = 'RIGHT';
-		else if (dx < -20 && direction !== 'RIGHT') direction = 'LEFT';
+        if (dx > 20 && direction !== 'LEFT') nextDirection = 'RIGHT';
+        else if (dx < -20 && direction !== 'RIGHT') nextDirection = 'LEFT';
 	} else {
-		if (dy > 20 && direction !== 'UP') direction = 'DOWN';
-		else if (dy < -20 && direction !== 'DOWN') direction = 'UP';
+        if (dy > 20 && direction !== 'UP') nextDirection = 'DOWN';
+        else if (dy < -20 && direction !== 'DOWN') nextDirection = 'UP';
 	}
 	if (!isPlaying) startSnakeGame();
 });
@@ -220,7 +258,8 @@ function startSnakeGame(speedMs) {
 	
 	// Reset game state
 	snake = [{x: 10, y: 10}];
-	direction = 'RIGHT';
+    direction = 'RIGHT';
+    nextDirection = 'RIGHT';
 	spawnFood();
 	score = 0;
 	isPlaying = true;
@@ -232,6 +271,7 @@ function startSnakeGame(speedMs) {
 	// Update display
 	draw();
 	updateSnakeHighScore();
+    updateSnakeMainButtonUI();
 }
 
 function showSnakeModal(msg) {
@@ -271,13 +311,14 @@ function showSnakeModal(msg) {
 	const actions = document.createElement('div');
 	actions.style.cssText = 'margin-top:16px;display:flex;gap:10px;justify-content:center;';
 	
-	const retry = document.createElement('button');
-	retry.textContent = 'Chơi lại';
+    const retry = document.createElement('button');
+    retry.textContent = 'Đóng';
 	retry.style.cssText = 'padding:8px 12px;';
-	retry.addEventListener('click', () => { 
-		modal.remove(); 
-		startSnakeGame(); 
-	});
+    retry.addEventListener('click', () => { 
+        modal.remove(); 
+        // Cập nhật nút chính để người chơi có thể bấm lại
+        if (window.updateSnakeMainButtonUI) updateSnakeMainButtonUI();
+    });
 	
 	const back = document.createElement('button');
 	back.textContent = 'Back to Hub';
@@ -299,4 +340,30 @@ function showSnakeModal(msg) {
 }
 
 window.startSnakeGame = startSnakeGame;
+// Main single-button behavior
+function snakeMainButtonClick(){
+    if (!isPlaying) { startSnakeGame(); return; }
+    setPaused(!isPaused);
+}
+function updateSnakeMainButtonUI(){
+    const btn = document.getElementById('snakeMainBtn'); if (!btn) return;
+    if (!isPlaying) { btn.textContent = 'Chơi ngay'; return; }
+    btn.textContent = isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
+}
+function setPaused(v){ isPaused = !!v; updateSnakeMainButtonUI(); draw(); }
+window.snakeMainButtonClick = snakeMainButtonClick;
+window.updateSnakeMainButtonUI = updateSnakeMainButtonUI;
+function initSnakeOptionsUI(){
+    const diff = document.getElementById('opt-difficulty');
+    const wrap = document.getElementById('opt-wrap');
+    const th = document.getElementById('opt-theme');
+    if (diff) diff.onchange = () => {
+        const v = diff.value;
+        if (v==='easy') baseStepMs = 240; else if (v==='hard') baseStepMs = 120; else baseStepMs = 180;
+        if (isPlaying) stepMs = baseStepMs;
+    };
+    if (wrap) wrap.onchange = () => { allowWrap = (wrap.value==='wrap'); };
+    if (th) th.onchange = () => { theme = th.value; draw(); };
+}
+window.initSnakeOptionsUI = initSnakeOptionsUI;
 requestAnimationFrame(gameLoop);

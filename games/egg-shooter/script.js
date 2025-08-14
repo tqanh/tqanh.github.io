@@ -12,6 +12,46 @@ const COLS = Math.floor(canvas.width / (RADIUS * 2));
 let rowParityOffset = 0;
 function isOddRow(row){ return ((row + rowParityOffset) % 2) === 1; }
 
+// Giới hạn particles để tránh GC và drop FPS
+const MAX_PARTICLES = 400;
+
+// Cache sprite quả trứng theo màu để giảm chi phí vẽ
+const EGG_SPRITE_CACHE = {};
+function getEggSprite(color) {
+    if (EGG_SPRITE_CACHE[color]) return EGG_SPRITE_CACHE[color];
+    const size = RADIUS * 2 + 8; // dư viền shadow
+    const oc = document.createElement('canvas');
+    oc.width = size; oc.height = size;
+    const octx = oc.getContext('2d');
+    octx.save();
+    octx.translate(size / 2, size / 2);
+    // Shadow được bake sẵn trong sprite
+    octx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    octx.shadowBlur = 8;
+    octx.shadowOffsetX = 2;
+    octx.shadowOffsetY = 2;
+    // Main circle
+    octx.beginPath();
+    octx.arc(0, 0, RADIUS, 0, Math.PI * 2);
+    octx.fillStyle = color;
+    octx.fill();
+    // Highlight
+    octx.shadowBlur = 0;
+    octx.shadowOffsetX = 0;
+    octx.shadowOffsetY = 0;
+    octx.beginPath();
+    octx.arc(-RADIUS * 0.3, -RADIUS * 0.3, RADIUS * 0.4, 0, Math.PI * 2);
+    octx.fillStyle = 'rgba(255,255,255,0.6)';
+    octx.fill();
+    // Border
+    octx.strokeStyle = '#fbc02d';
+    octx.lineWidth = 2;
+    octx.stroke();
+    octx.restore();
+    EGG_SPRITE_CACHE[color] = oc;
+    return oc;
+}
+
 let grid = [];
 let shooter = { x: canvas.width / 2, y: canvas.height - 80 };
 let currentEgg = null;
@@ -280,10 +320,12 @@ function animateEggRemoval(match) {
         });
         
         // Update particles
-        particles = particles.filter(particle => {
-            particle.update();
-            return particle.life > 0;
-        });
+    if (particles.length > MAX_PARTICLES) particles.length = MAX_PARTICLES;
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        if (p.life <= 0) particles.splice(i, 1);
+    }
         
         requestDraw();
         if (stillFading) {
@@ -302,33 +344,8 @@ function animateEggRemoval(match) {
 function drawEgg(x, y, color, fade = 1.0) {
     ctx.save();
     ctx.globalAlpha = fade;
-    
-    // Draw shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    
-    // Draw main egg
-    ctx.beginPath();
-    ctx.arc(x, y, RADIUS, 0, 2 * Math.PI);
-    ctx.fillStyle = color;
-    ctx.fill();
-    
-    // Draw highlight
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-    ctx.beginPath();
-    ctx.arc(x - RADIUS * 0.3, y - RADIUS * 0.3, RADIUS * 0.4, 0, 2 * Math.PI);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.fill();
-    
-    // Draw border
-    ctx.strokeStyle = '#fbc02d';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
+    const sprite = getEggSprite(color);
+    ctx.drawImage(sprite, x - sprite.width / 2, y - sprite.height / 2);
     ctx.restore();
 }
 
@@ -457,29 +474,28 @@ function updateShotEgg() {
         }
     });
     
-    // Check collision with eggs
+    // Check collision chỉ quanh cụm lân cận để giảm chi phí
     let hit = false;
-    for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
-            const egg = grid[row][col];
-            if (egg) {
-                let cx = col * RADIUS * 2 + (isOddRow(row) ? RADIUS : 0) + RADIUS;
-                let cy = row * RADIUS * 2 + RADIUS;
-                let dist = Math.hypot(shotEgg.x - cx, shotEgg.y - cy);
-                if (dist < RADIUS * 2 - 2) {
-                    // Ước lượng điểm va chạm trên biên hình tròn của quả trứng bị chạm
-                    const vx = shotEgg.x - cx, vy = shotEgg.y - cy;
-                    const len = Math.hypot(vx, vy) || 1;
-                    const rHit = (RADIUS * 2 - 2);
-                    const ix = cx + (vx / len) * rHit;
-                    const iy = cy + (vy / len) * rHit;
-                    placeEgg(row, col, ix, iy);
-                    hit = true;
-                    break;
-                }
+    const estRow = Math.max(0, Math.min(ROWS - 1, Math.round((shotEgg.y - RADIUS) / (RADIUS * 2))));
+    const estCol = Math.max(0, Math.min(COLS - 1, Math.round((shotEgg.x - (isOddRow(estRow) ? RADIUS : 0) - RADIUS) / (RADIUS * 2))));
+    for (let r = Math.max(0, estRow - 2); r <= Math.min(ROWS - 1, estRow + 2) && !hit; r++) {
+        for (let c = Math.max(0, estCol - 2); c <= Math.min(COLS - 1, estCol + 2); c++) {
+            const egg = grid[r][c];
+            if (!egg) continue;
+            let cx = c * RADIUS * 2 + (isOddRow(r) ? RADIUS : 0) + RADIUS;
+            let cy = r * RADIUS * 2 + RADIUS;
+            let dist = Math.hypot(shotEgg.x - cx, shotEgg.y - cy);
+            if (dist < RADIUS * 2 - 2) {
+                const vx = shotEgg.x - cx, vy = shotEgg.y - cy;
+                const len = Math.hypot(vx, vy) || 1;
+                const rHit = (RADIUS * 2 - 2);
+                const ix = cx + (vx / len) * rHit;
+                const iy = cy + (vy / len) * rHit;
+                placeEgg(r, c, ix, iy);
+                hit = true;
+                break;
             }
         }
-        if (hit) break;
     }
     
     // Hit top wall
@@ -1114,6 +1130,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pauseBtn) pauseBtn.addEventListener('click', () => {
         if (typeof isPaused === 'boolean') {
             isPaused = !isPaused;
+            // Cập nhật nhãn nút
+            pauseBtn.textContent = isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
         }
     });
     

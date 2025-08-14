@@ -5,6 +5,7 @@ let matched = [];
 let moves = 0;
 let isPlaying = false;
 let lockBoard = false;
+let isPaused = false;
 
 function shuffle(array) {
 	for (let i = array.length - 1; i > 0; i--) {
@@ -55,7 +56,7 @@ function renderMemory() {
 }
 
 function flipCard(idx) {
-	if (!isPlaying || lockBoard) return;
+    if (!isPlaying || lockBoard || isPaused) return;
 	if (flipped.includes(idx) || matched.includes(idx)) return;
 	flipped.push(idx);
 	renderMemory();
@@ -86,6 +87,13 @@ function finishMemory() {
 		updateMemoryHighScore();
 	}
 	showMemoryModal('You win! Moves: ' + moves);
+}
+
+// Toggle pause helper for UI
+function memoryPauseToggle(){
+    if (!isPlaying) return false;
+    isPaused = !isPaused; 
+    return isPaused;
 }
 
 function showMemoryModal(msg) {
@@ -124,3 +132,4 @@ if (document.readyState === 'loading') {
 // Expose
 window.startMemoryGame = startMemoryGame;
 window.updateMemoryHighScore = updateMemoryHighScore;
+window.memoryPauseToggle = memoryPauseToggle;

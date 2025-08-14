@@ -117,20 +117,46 @@
             </div>
             <div class="hint">Desktop: phím mũi tên để di chuyển, Space để bắt đầu, P tạm dừng. Mobile: vuốt để điều khiển.</div>
             <div class="actions">
-                <button onclick="startSnakeGame()">Chơi ngay</button>
+                <button id="snakeMainBtn" onclick="snakeMainButtonClick()">Chơi ngay</button>
                 <button onclick="showSnakeLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
                 <a href="../../index.html" class="back-button">Back to Hub</a>
+            </div>
+            <div class="actions" style="gap:8px;align-items:center;">
+                <label>⚙️ Tốc độ
+                    <select id="opt-difficulty" style="margin-left:6px;">
+                        <option value="easy">Dễ</option>
+                        <option value="normal" selected>Bình thường</option>
+                        <option value="hard">Khó</option>
+                    </select>
+                </label>
+                <label style="margin-left:8px;">🧱 Cạnh tường
+                    <select id="opt-wrap" style="margin-left:6px;">
+                        <option value="wall">Đụng thua</option>
+                        <option value="wrap">Đi xuyên tường</option>
+                    </select>
+                </label>
+                <label style="margin-left:8px;">🎨 Giao diện
+                    <select id="opt-theme" style="margin-left:6px;">
+                        <option value="classic">Classic</option>
+                        <option value="neon">Neon</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </label>
             </div>
             <div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
         </div>
     </div>
-    <script src="snake.js?v=2.4.0"></script>
+    <script src="snake.js?v=2.4.1"></script>
     <script src="../../js/config.js?v=2.4.0"></script>
     <script src="../../js/remoteLeaderboard.js?v=2.4.0"></script>
     <script src="../../js/hub.js?v=2.4.0"></script>
     <script src="../../js/auth-guard.js?v=2.4.0"></script>
     <script>
         // Wait for all scripts to load
+        window.addEventListener('DOMContentLoaded', function(){ 
+            if (window.updateSnakeMainButtonUI) updateSnakeMainButtonUI(); 
+            if (window.initSnakeOptionsUI) initSnakeOptionsUI();
+        });
         window.addEventListener('load', function() {
             // Ensure gameHub is initialized
             if (window.gameHub && window.gameHub.ensureInit) {
@@ -139,6 +165,7 @@
             
             // Update snake high score display on load
             updateSnakeHighScore();
+            if (window.updateSnakeMainButtonUI) updateSnakeMainButtonUI();
         });
         
         // Leaderboard function for Snake

@@ -142,7 +142,8 @@
 			</div>
 			<div class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</div>
 			<div class="actions">
-				<button onclick="startMemoryGame()">Chơi ngay</button>
+				<button id="memoryStartBtn">Chơi ngay</button>
+				<button id="memoryPauseBtn">⏸️ Tạm dừng</button>
 				<button onclick="showMemoryLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
 				<a href="../../index.html" class="back-button">Back to Hub</a>
 			</div>
@@ -164,6 +165,16 @@
 			
 			// Update memory high score display on load
 			updateMemoryHighScore();
+			// Wire buttons
+			const startBtn = document.getElementById('memoryStartBtn');
+			const pauseBtn = document.getElementById('memoryPauseBtn');
+			if (startBtn) startBtn.onclick = () => startMemoryGame();
+			if (pauseBtn) pauseBtn.onclick = () => {
+				if (typeof window.memoryPauseToggle === 'function') {
+					const paused = window.memoryPauseToggle();
+					pauseBtn.textContent = paused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng';
+				}
+			};
 		});
 		
 		// Leaderboard function for Memory

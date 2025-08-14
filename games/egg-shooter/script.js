@@ -1148,21 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (leaderboardBtn) leaderboardBtn.addEventListener('click', showLeaderboard);
     if (backBtn) backBtn.addEventListener('click', () => { location.href='../../index.html'; });
     updateEggMainBtn();
-    // Auto-start on first pointer interaction for convenience (ignore clicks on main button)
-    const __autoStartOnce = (e) => {
-        const target = e && e.target ? e.target : null;
-        if (target && (target.id === 'eggMainBtn' || (typeof target.closest === 'function' && target.closest('#eggMainBtn')))) {
-            window.removeEventListener('pointerdown', __autoStartOnce, true);
-            return;
-        }
-        if (!isPlaying && window.startGame) {
-            window.startGame();
-            updateEggMainBtn();
-            requestDraw();
-        }
-        window.removeEventListener('pointerdown', __autoStartOnce, true);
-    };
-    window.addEventListener('pointerdown', __autoStartOnce, true);
+    // Bỏ cơ chế auto-start để tránh xung đột click vào nút chính
     
     // Add keyboard support for pause (P key)
     document.addEventListener('keydown', function(e) {

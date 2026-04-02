@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="icon" href="../../assets/icons/memory.svg">
+	<link rel="apple-touch-icon" href="../../assets/icons/memory.svg">
+	<meta name="theme-color" content="#2196f3">
+	<title>Thẻ Ghi Nhớ</title>
+	<style>
+		:root { --card-max: 560px; }
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100dvh;
+			min-height: 100vh;
+			margin: 0;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			font-family: 'Roboto', sans-serif;
+		}
+		.container { width: 100%; display: flex; justify-content: center; padding: 12px; box-sizing: border-box; }
+		.card {
+			width: min(95vw, var(--card-max));
+			background: rgba(255,255,255,0.15);
+			border-radius: 18px;
+			box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+			padding: 18px 18px 22px;
+			box-sizing: border-box;
+			text-align: center;
+			backdrop-filter: blur(8px);
+			border: 1px solid rgba(255,255,255,0.25);
+		}
+		h1 {
+			margin: 8px 0 12px;
+			font-size: 30px;
+			background: linear-gradient(45deg, #ffd700, #ffed4e);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			text-shadow: 0 0 10px rgba(255,215,0,0.4);
+		}
+		.board { position: relative; display: inline-block; }
+		/* Responsive grid board */
+		#memory-board {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 12px;
+			justify-content: center;
+			margin: 0 auto;
+			background: #e3f2fd;
+			border: 3px solid #1976d2;
+			border-radius: 14px;
+			padding: 14px;
+			box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+			max-width: 420px;
+		}
+		.memory-card {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #90caf9;
+			border-radius: 12px;
+			box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+			font-size: clamp(20px, 7vw, 36px);
+			cursor: pointer;
+			user-select: none;
+			-webkit-user-select: none;
+			touch-action: manipulation;
+			transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+			aspect-ratio: 1 / 1;
+		}
+		.memory-card:active { transform: scale(0.97); }
+		.memory-card.hidden { background: #bdbdbd; color: transparent; }
+		/* HUD badges */
+			.hud {
+				position: relative;
+				top: auto; left: auto; right: auto;
+				display: flex; justify-content: space-between;
+				pointer-events: none;
+				margin: 6px auto 10px;
+				max-width: 420px;
+			}
+		.badge {
+			pointer-events: none;
+			background: rgba(255,255,255,0.9);
+			color: #333;
+			padding: 8px 12px;
+			border-radius: 20px;
+			font-weight: 700;
+			font-size: 14px;
+			box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+			border: 1px solid rgba(0,0,0,0.05);
+		}
+		.hint { color: #f3f3f3; font-size: 14px; margin-top: 12px; }
+		.actions { margin-top: 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+		button, .back-button { padding: 12px 22px; border: none; border-radius: 28px; cursor: pointer; font-weight: 700; }
+		button {
+			background: linear-gradient(45deg, #4CAF50, #45a049);
+			color: #fff;
+			box-shadow: 0 6px 18px rgba(76,175,80,0.4);
+			transition: transform 0.12s ease, filter 0.2s ease;
+		}
+		button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+		.back-button {
+			background: linear-gradient(45deg, #2196F3, #1976D2);
+			color: #fff; text-decoration: none; display: inline-block;
+			box-shadow: 0 6px 18px rgba(25,118,210,0.4);
+		}
+		.leaderboard-btn {
+			background: linear-gradient(45deg, #FFD700, #FFC107);
+			color: #333;
+			box-shadow: 0 6px 18px rgba(255,215,0,0.4);
+		}
+		.leaderboard-btn:hover {
+			transform: translateY(-1px);
+			filter: brightness(1.05);
+		}
+		/* High score badge */
+		#high-score {
+			margin: 14px auto 0;
+			max-width: 360px;
+			background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+			color: #ffd700;
+			border: 2px solid #ffd700;
+			border-radius: 12px;
+			padding: 8px 14px;
+			font-weight: 700;
+			box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+			display: block;
+		}
+		@media (max-width: 480px) {
+			#memory-board { gap: 10px; padding: 10px; max-width: 92vw; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="card" ontouchstart="" style="touch-action:manipulation;">
+			<h1>Trò chơi Thẻ Ghi Nhớ</h1>
+			<div class="board">
+				<div class="hud">
+					<div class="badge" id="moves-badge">Lượt: <span id="moves-text">0</span></div>
+					<div class="badge">Chúc may mắn!</div>
+				</div>
+				<div id="memory-board"></div>
+			</div>
+			<div class="hint">Desktop: click để lật thẻ. Mobile: chạm để lật. Ghép 2 thẻ giống nhau.</div>
+			<div class="actions">
+				<button id="memoryMainBtn">Chơi ngay</button>
+				<button onclick="showMemoryLeaderboard()" class="leaderboard-btn">🏆 Bảng xếp hạng</button>
+				<a href="../../index.html" class="back-button">Về Hub</a>
+			</div>
+			<div class="actions" style="gap:8px;align-items:center;">
+				<label>⚙️ Mức độ
+					<select id="memoryDifficulty" style="margin-left:6px;">
+						<option value="easy">Dễ</option>
+						<option value="normal" selected>Bình thường</option>
+						<option value="hard">Khó</option>
+					</select>
+				</label>
+				<label style="margin-left:8px;">🎨 Giao diện
+					<select id="memoryTheme" style="margin-left:6px;">
+						<option value="classic">Cổ điển</option>
+						<option value="neon">Neon</option>
+						<option value="dark">Tối</option>
+					</select>
+				</label>
+			</div>
+			<div id="high-score">🏆 Điểm cao nhất: <span id="high-score-value">0</span></div>
+		</div>
+	</div>
+	    <script src="memory.js?v=2.4.0"></script>
+    <script src="../../js/config.js?v=2.4.0"></script>
+    <script src="../../js/remoteLeaderboard.js?v=2.4.0"></script>
+    <script src="../../js/hub.js?v=2.4.0"></script>
+    <script src="../../js/auth-guard.js?v=2.4.0"></script>
+	<script>
+		// Wait for all scripts to load
+		window.addEventListener('load', function() {
+			// Ensure gameHub is initialized
+			if (window.gameHub && window.gameHub.ensureInit) {
+				window.gameHub.ensureInit();
+			}
+			
+			// Update memory high score display on load
+			updateMemoryHighScore();
+			// Nút chính sẽ được gán trong memory.js
+		});
+		
+		// Leaderboard function for Memory
+		function showMemoryLeaderboard() {
+			try {
+				if (window.remoteLeaderboard && window.remoteLeaderboard.enabled) {
+					// Try to get remote leaderboard
+					window.remoteLeaderboard.list('memory', 10).then(scores => {
+						let message = '🏆 Top 10 - Thẻ Ghi Nhớ\n\n';
+						
+						if (scores && scores.length > 0) {
+							scores.forEach((score, index) => {
+								message += `${index + 1}. ${score.user}: ${score.score}\n`;
+							});
+						} else {
+							message += 'Chưa có điểm số nào.';
+						}
+						
+						alert(message);
+					}).catch(error => {
+						showMemoryLocalLeaderboard();
+					});
+				} else {
+					showMemoryLocalLeaderboard();
+				}
+			} catch (error) {
+				showMemoryLocalLeaderboard();
+			}
+		}
+		
+		function showMemoryLocalLeaderboard() {
+			try {
+				if (window.gameHub && window.gameHub.getLeaderboard) {
+					window.gameHub.getLeaderboard('memory').then(scores => {
+						let message = '🏆 Top 10 - Thẻ Ghi Nhớ (Local)\n\n';
+						
+						if (scores && scores.length > 0) {
+							scores.forEach((score, index) => {
+								message += `${index + 1}. ${score.name}: ${score.score}\n`;
+							});
+						} else {
+							message += 'Chưa có điểm số nào.';
+						}
+						
+						alert(message);
+					});
+				} else {
+					alert('Leaderboard chưa khả dụng.');
+				}
+			} catch (error) {
+				alert('Không thể hiển thị leaderboard: ' + error.message);
+			}
+		}
+	</script>
+</body>
+</html>

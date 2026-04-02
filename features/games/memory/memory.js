@@ -1,0 +1,227 @@
+const BASE_CARDS = ['🍎','🍌','🍇','🍉','🍓','🍒','🍍','🥝'];
+let cards = [...BASE_CARDS];
+let deck = [];
+let flipped = [];
+let matched = [];
+let moves = 0;
+let isPlaying = false;
+let lockBoard = false;
+let isPaused = false;
+
+function shuffle(array) {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+}
+
+function updateMemoryHighScore() {
+	try {
+		if (window.gameHub && window.gameHub.getHighScore) {
+			const hs = window.gameHub.getHighScore('memory');
+			const el = document.getElementById('high-score-value');
+			if (el && typeof hs === 'number') el.textContent = String(hs);
+		}
+	} catch {}
+}
+
+function startMemoryGame() {
+    isPaused = false;
+    deck = [...cards, ...cards];
+	shuffle(deck);
+	flipped = [];
+	matched = [];
+	moves = 0;
+	isPlaying = true;
+	lockBoard = false;
+	renderMemory();
+	updateMemoryHighScore();
+    updateMemoryMainBtn();
+}
+
+function renderMemory() {
+	const board = document.getElementById('memory-board');
+	if (!board) return;
+    board.innerHTML = '';
+    // Set grid columns theo số lượng thẻ (đồng bộ mức độ)
+    const total = deck.length;
+    let cols = 4; // 4x4 cho 16 thẻ
+    if (total === 20) cols = 5;   // 5x4 cho 20 thẻ
+    else if (total === 30) cols = 6; // 6x5 cho 30 thẻ
+    board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+	deck.forEach((card, idx) => {
+		const div = document.createElement('div');
+		div.className = 'memory-card';
+		const visible = matched.includes(idx) || flipped.includes(idx);
+		div.textContent = visible ? card : '❓';
+		if (!visible) div.classList.add('hidden');
+		div.onclick = () => flipCard(idx);
+		board.appendChild(div);
+	});
+	const movesEl = document.getElementById('memory-moves');
+    if (movesEl) movesEl.textContent = 'Lượt: ' + moves;
+	const badge = document.getElementById('moves-text');
+	if (badge) badge.textContent = String(moves);
+}
+
+function flipCard(idx) {
+    if (!isPlaying || lockBoard || isPaused) return;
+	if (flipped.includes(idx) || matched.includes(idx)) return;
+	flipped.push(idx);
+	renderMemory();
+	if (flipped.length === 2) {
+		moves++;
+		lockBoard = true;
+		const [a, b] = flipped;
+		setTimeout(() => {
+			if (deck[a] === deck[b]) {
+				matched.push(a, b);
+				if (matched.length === deck.length) {
+					finishMemory();
+				}
+			} 
+			flipped = [];
+			lockBoard = false;
+			renderMemory();
+		}, 500);
+	}
+}
+
+function finishMemory() {
+	isPlaying = false;
+    isPaused = false;
+	if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(200);
+	if (window.gameHub && window.gameHub.saveHighScore) {
+		const score = Math.max(1, (cards.length * 2 * 2) - moves); // higher is better
+		window.gameHub.saveHighScore('memory', score);
+		updateMemoryHighScore();
+	}
+    showMemoryModal('Bạn đã thắng! Lượt: ' + moves);
+    updateMemoryMainBtn();
+}
+
+// Toggle pause helper for UI
+function memoryPauseToggle(){
+    if (!isPlaying) return false;
+    isPaused = !isPaused; 
+    updateMemoryMainBtn();
+    return isPaused;
+}
+
+function showMemoryModal(msg) {
+	let modal = document.getElementById('memory-modal');
+	if (!modal) {
+		modal = document.createElement('div');
+		modal.id = 'memory-modal';
+		modal.style.position = 'fixed';
+		modal.style.top = '0';
+		modal.style.left = '0';
+		modal.style.width = '100vw';
+		modal.style.height = '100vh';
+		modal.style.background = 'rgba(0,0,0,0.5)';
+		modal.style.display = 'flex';
+		modal.style.justifyContent = 'center';
+		modal.style.alignItems = 'center';
+		modal.style.zIndex = '9999';
+        modal.innerHTML = `<div style="background:#fff;padding:30px 40px;border-radius:10px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2);font-size:1.5em;">
+			<span id="memory-modal-message"></span><br><br>
+			<button onclick="document.getElementById('memory-modal').remove();startMemoryGame();">Chơi lại</button>
+            <button onclick="location.href='../../index.html'">Về Hub</button>
+		</div>`;
+		document.body.appendChild(modal);
+	}
+	document.getElementById('memory-modal-message').textContent = msg;
+	modal.style.display = 'flex';
+}
+
+// Auto-start for usability
+// Chuyển sang cơ chế giống egg-shooter: không auto-start nếu người dùng bấm nút
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        wireMemoryMainButton();
+        initMemoryOptionsUI();
+        // Auto-start khi tương tác đầu tiên nhưng bỏ qua click vào nút chính
+        const once = (e) => {
+            const t = e && e.target ? e.target : null;
+            if (t && (t.id === 'memoryMainBtn' || (typeof t.closest==='function' && t.closest('#memoryMainBtn')))) {
+                window.removeEventListener('pointerdown', once, true);
+                return;
+            }
+            if (!isPlaying) startMemoryGame();
+            window.removeEventListener('pointerdown', once, true);
+        };
+        window.addEventListener('pointerdown', once, true);
+        updateMemoryMainBtn();
+    });
+} else {
+    wireMemoryMainButton();
+    initMemoryOptionsUI();
+    updateMemoryMainBtn();
+}
+
+function wireMemoryMainButton(){
+    const btn = document.getElementById('memoryMainBtn');
+    if (!btn) return;
+    btn.onclick = function(){
+        if (!isPlaying) startMemoryGame();
+        else memoryPauseToggle();
+    };
+}
+
+function updateMemoryMainBtn(){
+    const btn = document.getElementById('memoryMainBtn');
+    if (!btn) return;
+    btn.textContent = !isPlaying ? 'Chơi ngay' : (isPaused ? '▶️ Tiếp tục' : '⏸️ Tạm dừng');
+}
+
+// Difficulty & Theme handling (sync style với các game khác)
+function initMemoryOptionsUI(){
+    try{
+        const diffSel = document.getElementById('memoryDifficulty');
+        const themeSel = document.getElementById('memoryTheme');
+        if (diffSel){
+            diffSel.onchange = function(){
+                applyMemoryDifficulty(diffSel.value);
+            };
+            // init from current value
+            applyMemoryDifficulty(diffSel.value);
+        }
+        if (themeSel){
+            themeSel.onchange = function(){
+                applyMemoryTheme(themeSel.value);
+            }
+        }
+    }catch(_){ }
+}
+
+function applyMemoryDifficulty(level){
+    // Điều chỉnh số cặp thẻ theo mức độ
+    // easy: 4x4 (8 cặp); normal: 5x4 (10 cặp); hard: 6x5 (15 cặp) nếu màn hình cho phép
+    const easy = [...BASE_CARDS];
+    const normal = [...BASE_CARDS, '🥑','🥥'];
+    const hard = [...BASE_CARDS, '🥑','🥥','🧀','🍗','🥨'];
+    if (level === 'easy') cards = easy;
+    else if (level === 'hard') cards = hard;
+    else cards = normal;
+    // Nếu đang chơi, khởi động lại để áp dụng mức mới
+    if (isPlaying) startMemoryGame();
+}
+
+function applyMemoryTheme(theme){
+    const board = document.getElementById('memory-board');
+    if (!board) return;
+    const body = document.body;
+    if (theme === 'dark'){
+        body.style.background = 'linear-gradient(135deg,#0f172a 0%, #111827 100%)';
+    } else if (theme === 'neon'){
+        body.style.background = 'linear-gradient(135deg,#001219 0%, #0a9396 100%)';
+    } else {
+        body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    }
+}
+
+// Expose
+window.startMemoryGame = startMemoryGame;
+window.updateMemoryHighScore = updateMemoryHighScore;
+window.memoryPauseToggle = memoryPauseToggle;
+window.updateMemoryMainBtn = updateMemoryMainBtn;

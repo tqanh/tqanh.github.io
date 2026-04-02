@@ -4,97 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="description" content="Game Hub - Bộ sưu tập game đa nền tảng với Bắn Trứng, Rắn Săn Mồi và Thẻ Ghi Nhớ">
-    <meta name="keywords" content="game, ban trung, ran san moi, the ghi nho, html5 games">
-    <meta name="author" content="Game Hub">
+    <meta name="description" content="TqAnh Portal - Tập hợp các ứng dụng và trò chơi">
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icons/egg.svg">
-    <link rel="apple-touch-icon" href="./assets/icons/egg.svg">
-    <link rel="shortcut icon" href="./assets/icons/egg.svg">
-    <title>Game Hub - Đăng nhập</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/login.css">
+    <title>TqAnh Portal</title>
+    <link rel="stylesheet" href="styles/portal.css">
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-card">
-            <h1 class="login-title">🎮 Game Hub</h1>
-            <p class="login-subtitle">Đăng nhập để chơi game và lưu điểm</p>
-            
-            <div id="signInForm" class="login-form">
-                <input id="signInUser" class="login-input" name="username" placeholder="ID người chơi" autocomplete="username" />
-                <input id="signInPass" class="login-input" name="current-password" placeholder="Mật khẩu" type="password" autocomplete="current-password" />
-                <button id="btnSignIn" class="login-button">Đăng nhập</button>
-                <div class="login-switch">
-                    Chưa có tài khoản? <button onclick="showSignUp()">Đăng ký</button>
-                </div>
-            </div>
-            
-            <div id="signUpForm" class="login-form" style="display: none;">
-                <input id="signUpUser" class="login-input" name="username" placeholder="ID người chơi" autocomplete="username" />
-                <input id="signUpPass" class="login-input" name="new-password" placeholder="Mật khẩu mới" type="password" autocomplete="new-password" />
-                <button id="btnSignUp" class="login-button">Đăng ký</button>
-                <div class="login-switch">
-                    Đã có tài khoản? <button onclick="showSignIn()">Đăng nhập</button>
-                </div>
-            </div>
-            
-            <div id="loginError" class="login-error" style="display: none;"></div>
-        </div>
-    </div>
+    <header class="portal-header">
+        <h1>🚀 TqAnh Portal</h1>
+        <p>Khám phá các tính năng và ứng dụng thú vị</p>
+    </header>
 
-    <!-- Game Hub Content (hidden until login) -->
-    <div id="hubContent" class="hub-content">
-        <div class="hub-header">
-            <h1>🎮 Game Hub</h1>
-            <p>Thưởng thức bộ sưu tập game cổ điển!</p>
-            <div class="user-info">
-                <span id="userDisplay">Chào mừng!</span>
-                <button onclick="logout()" style="margin-left: 15px; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Đăng xuất</button>
-                
-            </div>
-        </div>
-        
-        <div class="hub-container">
-            <div class="games-grid">
-                <div class="game-card">
-                    <img src="assets/icons/egg.svg?v=2.5.0" alt="Bắn Trứng">
-                    <h3>Bắn Trứng</h3>
-                    <p>Kết hợp và bắn những quả trứng đầy màu sắc trong trò chơi bắn bong bóng gây nghiện!</p>
-                    <a href="games/egg-shooter/" class="play-button">Chơi ngay</a>
-                </div>
-                
-                <div class="game-card">
-                    <img src="assets/icons/snake.svg?v=2.5.0" alt="Rắn">
-                    <h3>Rắn Săn Mồi</h3>
-                    <p>Game rắn cổ điển với đồ họa hiện đại và nhiều mức độ khó.</p>
-                    <a href="games/snake/" class="play-button">Chơi ngay</a>
-                </div>
-                
-                <div class="game-card">
-                    <img src="assets/icons/memory.svg?v=2.5.0" alt="Thẻ Ghi Nhớ">
-                    <h3>Thẻ Ghi Nhớ</h3>
-                    <p>Rèn trí nhớ bằng cách ghép cặp các thẻ giống nhau. Có nhiều chủ đề để chọn!</p>
-                    <a href="games/memory/" class="play-button">Chơi ngay</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <main class="features-grid">
+        <a href="./features/games/" class="feature-card">
+            <div class="feature-icon">🎮</div>
+            <h2>Game Hub</h2>
+            <p>Bộ sưu tập game đa nền tảng: Bắn Trứng, Rắn Săn Mồi, Thẻ Ghi Nhớ.</p>
+            <span class="feature-badge">Hot</span>
+        </a>
 
-    <!-- Version Display -->
-    <div id="versionDisplay" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-family: monospace; z-index: 1000;">
-        Loading...
-    </div>
+        <div class="feature-card coming-soon">
+            <div class="feature-icon">📝</div>
+            <h2>Ghi Chú</h2>
+            <p>Ứng dụng ghi chú cá nhân với đồng bộ cloud.</p>
+            <span class="feature-badge beta">Sắp ra mắt</span>
+        </div>
 
-    <script src="js/config.js" defer></script>
-    <script src="js/remoteLeaderboard.js?v=2.5.0" defer></script>
-    <script src="js/login.js" defer></script>
+        <div class="feature-card coming-soon">
+            <div class="feature-icon">🎨</div>
+            <h2>Canvas Draw</h2>
+            <p>Vẽ và thiết kế trực tuyến.</p>
+            <span class="feature-badge beta">Sắp ra mắt</span>
+        </div>
+    </main>
+
+    <div class="version" id="version">v3.0.0</div>
+
+    <script src="js/portal.js"></script>
 </body>
 </html>

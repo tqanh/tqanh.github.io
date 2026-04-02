@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="../../assets/icons/egg.svg">
+    <link rel="apple-touch-icon" href="../../assets/icons/egg.svg">
+    <meta name="theme-color" content="#667eea">
+    <title>🎮 Game Bắn Trứng Khủng Long - Cải tiến</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container" ontouchstart="" style="touch-action:manipulation;">
+        <h1>🦖 Game Bắn Trứng Khủng Long</h1>
+        
+        <div id="game-area">
+            <canvas id="bubble-canvas" width="600" height="800"></canvas>
+            
+            <!-- Level Display -->
+            <div id="level-display">
+                <span id="level-label">Cấp độ</span>
+                <span id="level-value">1</span>
+            </div>
+            
+            <!-- Combo Display -->
+            <div id="combo-display">
+                <span id="combo-label">Combo</span>
+                <span id="combo-value">x1</span>
+            </div>
+            
+            <div id="shooter">
+                <img id="dino" src="https://img.icons8.com/color/48/000000/dinosaur.png" alt="Khủng Long" />
+                <div id="current-egg"></div>
+            </div>
+        </div>
+        
+            <div class="game-controls">
+                <button id="eggMainBtn" class="game-button">🎯 Bắt đầu</button>
+                <button id="leaderboardBtn" class="game-button leaderboard-btn">🏆 Bảng xếp hạng</button>
+                <button id="backBtn" class="game-button back-btn">🏠 Về Hub</button>
+            </div>
+        
+        <div id="score">
+            <p>🏆 Điểm: <span id="score-value">0</span></p>
+            <p>🎯 Trứng phá hủy: <span id="eggs-destroyed">0</span></p>
+            <p>⭐ Bắn hoàn hảo: <span id="perfect-shots">0</span></p>
+        </div>
+        
+        <div id="guide">
+            <p>🎮 <strong>Điều khiển:</strong> Kéo chuột/chạm để nhắm, nhấn/thả để bắn!</p>
+            <p>⌨️ <strong>Bàn phím:</strong> Mũi tên để nhắm, Space để bắn, P để tạm dừng</p>
+            <p>📱 <strong>Mobile:</strong> Vuốt để điều khiển nhanh</p>
+        </div>
+        
+            <div id="power-up-info">
+            <h3>💎 Power-ups:</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 15px 0;">
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #ff5722; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">💣</div>
+                    <small>Bom: Phá hủy 3x3</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #9c27b0; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">🌈</div>
+                    <small>Cầu vồng: Đổi màu tất cả</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #2196f3; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">❄️</div>
+                    <small>Đóng băng: Dừng thời gian</small>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 30px; height: 30px; background: #4caf50; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">⚡</div>
+                    <small>Tốc độ: Tăng tốc bắn</small>
+                </div>
+            </div>
+        </div>
+        
+        <div id="sound-test" style="text-align:center;margin:10px 0;">
+            <h4>🔊 Test âm thanh:</h4>
+            <button onclick="window.eggShooterSounds.playSound('shoot')">🎯 Bắn</button>
+            <button onclick="window.eggShooterSounds.playSound('explode')">💥 Nổ</button>
+            <button onclick="window.eggShooterSounds.playSound('win')">🏆 Thắng</button>
+            <button onclick="window.eggShooterSounds.playSound('lose')">😔 Thua</button>
+        </div>
+        
+        <!-- High Score Display -->
+        <div id="high-score" style="display: none;">
+            <span id="high-score-label">🏆 Điểm cao nhất: </span>
+            <span id="high-score-value">0</span>
+        </div>
+    </div>
+    
+    <script src="script.js?v=2.4.0"></script>
+    <script src="sounds.js?v=2.4.0"></script>
+    <script src="../../js/config.js?v=2.4.0"></script>
+    <script src="../../js/remoteLeaderboard.js?v=2.4.0"></script>
+    <script src="../../js/hub.js?v=2.4.0"></script>
+    <script src="../../js/auth-guard.js?v=2.4.0"></script>
+    
+    <script>
+        // Options: theme + tốc độ rơi
+        (function addOptions(){
+            document.addEventListener('DOMContentLoaded', function(){
+                try{
+                    const controls = document.querySelector('.game-controls');
+                    if (!controls) return;
+                    const optWrap = document.createElement('div');
+                    optWrap.style.cssText = 'margin-top:8px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; color:#333;';
+                    optWrap.innerHTML = `
+                        <label>🎨 Giao diện
+                            <select id="eggTheme" style="margin-left:6px;">
+                                <option value="classic">Cổ điển</option>
+                                <option value="neon">Neon</option>
+                                <option value="dark">Tối</option>
+                            </select>
+                        </label>
+                        <label>⚙️ Tốc độ rơi
+                            <select id="eggSpeed" style="margin-left:6px;">
+                                <option value="slow">Chậm</option>
+                                <option value="normal" selected>Bình thường</option>
+                                <option value="fast">Nhanh</option>
+                            </select>
+                        </label>
+                    `;
+                    controls.after(optWrap);
+                    const th = document.getElementById('eggTheme');
+                    const sp = document.getElementById('eggSpeed');
+                    if (th) th.onchange = ()=>{ if (window.setEggTheme) setEggTheme(th.value); };
+                    if (sp) sp.onchange = ()=>{ if (window.setEggFallSpeed) setEggFallSpeed(sp.value); };
+                }catch(_){}}
+            );
+        })();
+        // Đồng bộ tên hiển thị với ID đăng nhập Supabase (nếu có)
+        (function syncDisplayNameFromAuth(){
+            document.addEventListener('DOMContentLoaded', async function(){
+                try{
+                    if (!window.remoteLeaderboard || !window.remoteLeaderboard.enabled) return;
+                    const uid = await window.remoteLeaderboard.currentUserId();
+                    if (!uid) return;
+                    // Supabase lưu email dạng id@example.org → cắt trước @ làm ID
+                    // Ở đây ta đã lưu displayName khi đăng nhập (remoteLeaderboard.signInUserId),
+                    // nhưng đồng bộ lại cho chắc.
+                    const current = (localStorage.getItem('gh_display_name') || '').trim();
+                    if (!current) return;
+                    localStorage.setItem('gh_display_name', current);
+                }catch(_){}
+            });
+        })();
+        // Yêu cầu đặt tên nếu chưa có (chỉ khi không có ID)
+        (function ensureDisplayName(){
+            document.addEventListener('DOMContentLoaded', function(){
+                try{
+                    const key = 'gh_display_name';
+                    const current = (localStorage.getItem(key) || '').trim();
+                    if (current) return;
+
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100000;';
+                    const box = document.createElement('div');
+                    box.style.cssText = 'background:#fff;border-radius:14px;max-width:420px;width:92vw;padding:22px 20px;box-shadow:0 20px 40px rgba(0,0,0,.3);text-align:center;';
+                    box.innerHTML = '<h3 style="margin:0 0 8px;color:#1976d2">Đặt tên của bạn</h3>'+
+                        '<p style="margin:0 0 12px;color:#555">Tên này sẽ hiển thị trên bảng xếp hạng (dùng ID của bạn).</p>'+
+                        '<input id="__gh_name_input" type="text" placeholder="Nhập tên (2-20 ký tự)" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:16px;">'+
+                        '<div style="margin-top:14px;display:flex;gap:10px;justify-content:center">'+
+                        '<button id="__gh_name_btn" style="padding:10px 16px;border:none;background:#1976d2;color:#fff;border-radius:10px;cursor:pointer">Lưu</button>'+
+                        '</div>';
+                    overlay.appendChild(box);
+                    document.body.appendChild(overlay);
+
+                    const input = box.querySelector('#__gh_name_input');
+                    const btn = box.querySelector('#__gh_name_btn');
+                    const accept = () => {
+                        let v = (input.value || '').trim();
+                        v = v.replace(/[^\w\s-]/g,'').slice(0,20);
+                        if (v.length < 2) { input.focus(); return; }
+                        localStorage.setItem(key, v);
+                        document.body.removeChild(overlay);
+                    };
+                    btn.onclick = accept;
+                    input.onkeypress = (e)=>{ if (e.key==='Enter') accept(); };
+                    setTimeout(()=> input.focus(), 50);
+                }catch(_){}
+            });
+        })();
+        // Update level display
+        function updateLevelDisplay(level) {
+            const levelValue = document.getElementById('level-value');
+            if (levelValue) {
+                levelValue.textContent = level;
+            }
+        }
+        
+        // Update combo display
+        function updateComboDisplay(combo) {
+            const comboDisplay = document.getElementById('combo-display');
+            const comboValue = document.getElementById('combo-value');
+            if (comboDisplay && comboValue) {
+                comboValue.textContent = `x${combo}`;
+                if (combo > 1) {
+                    comboDisplay.classList.add('show');
+                } else {
+                    comboDisplay.classList.remove('show');
+                }
+            }
+        }
+        
+        // Update stats display
+        function updateStatsDisplay() {
+            const eggsDestroyed = document.getElementById('eggs-destroyed');
+            const perfectShots = document.getElementById('perfect-shots');
+            if (eggsDestroyed && window.gameStats) {
+                eggsDestroyed.textContent = window.gameStats.eggsDestroyed || 0;
+            }
+            if (perfectShots && window.gameStats) {
+                perfectShots.textContent = window.gameStats.perfectShots || 0;
+            }
+        }
+        
+        // Check for high score
+        function checkHighScore() {
+            if (window.gameHub && window.gameHub.getHighScore) {
+                const highScore = window.gameHub.getHighScore('egg-shooter');
+                if (highScore > 0) {
+                    const highScoreDiv = document.getElementById('high-score');
+                    const highScoreValue = document.getElementById('high-score-value');
+                    if (highScoreDiv && highScoreValue) {
+                        highScoreValue.textContent = highScore;
+                        highScoreDiv.style.display = 'block';
+                    }
+                }
+            }
+        }
+        
+        // Initialize displays
+        document.addEventListener('DOMContentLoaded', function() {
+            checkHighScore();
+            
+            // Update displays every 100ms
+            setInterval(() => {
+                if (window.level) updateLevelDisplay(window.level);
+                if (window.combo) updateComboDisplay(window.combo);
+                updateStatsDisplay();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

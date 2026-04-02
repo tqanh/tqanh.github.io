@@ -1,10 +1,12 @@
 {
+  "id": "game-hub",
   "name": "Game Hub Collection",
   "short_name": "Game Hub",
   "description": "Bộ sưu tập game đa nền tảng với Bắn Trứng, Rắn Săn Mồi và Thẻ Ghi Nhớ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#667eea",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
@@ -28,6 +30,20 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./assets/icons/egg.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    },
+    {
+      "src": "./assets/icons/egg.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
     }
   ]
 }

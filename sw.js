@@ -1,24 +1,19 @@
-const CACHE_NAME = 'game-hub-v2.4.1';
+const CACHE_NAME = 'game-hub-v2.5.0';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './version.txt',
   './js/config.js',
   './js/remoteLeaderboard.js',
   './js/hub.js',
   './js/auth-guard.js',
+  './js/login.js',
   './styles/main.css',
+  './styles/login.css',
   './assets/icons/egg.svg',
   './assets/icons/snake.svg',
-  './assets/icons/memory.svg',
-  './games/egg-shooter/index.html',
-  './games/egg-shooter/script.js',
-  './games/egg-shooter/style.css',
-  './games/egg-shooter/sounds.js',
-  './games/snake/index.html',
-  './games/snake/snake.js',
-  './games/memory/index.html',
-  './games/memory/memory.js'
+  './assets/icons/memory.svg'
 ];
 
 self.addEventListener('install', event => {

@@ -142,41 +142,45 @@ function BallShooter() {
         })).filter(bullet => bullet.y > -10)
       );
 
-      // Check collisions and update together using refs
-      const currentBalls = ballsRef.current;
-      const currentBullets = bulletsRef.current;
-      
-      const remainingBalls = [];
-      const remainingBullets = [...currentBullets];
-      let newScore = 0;
-      
-      currentBalls.forEach(ball => {
-        let hit = false;
-        for (let i = remainingBullets.length - 1; i >= 0; i--) {
-          const bullet = remainingBullets[i];
-          const dx = (ball.x - bullet.x);
-          const dy = (ball.y - bullet.y);
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < ball.radius / 5 + 2) {
-            hit = true;
-            remainingBullets.splice(i, 1);
-            newScore += 10;
-            break;
+      // Check collisions and update together
+      setBalls(prevBalls => {
+        const remainingBalls = [];
+        let newScore = 0;
+        
+        // Get current bullets from ref
+        const currentBullets = bulletsRef.current;
+        const remainingBullets = [...currentBullets];
+        
+        prevBalls.forEach(ball => {
+          let hit = false;
+          for (let i = remainingBullets.length - 1; i >= 0; i--) {
+            const bullet = remainingBullets[i];
+            const dx = (ball.x - bullet.x);
+            const dy = (ball.y - bullet.y);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < ball.radius / 5 + 2) {
+              hit = true;
+              remainingBullets.splice(i, 1);
+              newScore += 10;
+              break;
+            }
           }
+          
+          if (!hit) {
+            remainingBalls.push(ball);
+          }
+        });
+        
+        if (newScore > 0) {
+          setScore(s => s + newScore);
         }
         
-        if (!hit) {
-          remainingBalls.push(ball);
-        }
+        // Update bullets state
+        setBullets(remainingBullets);
+        
+        return remainingBalls;
       });
-      
-      if (newScore > 0) {
-        setScore(s => s + newScore);
-      }
-      
-      setBalls(remainingBalls);
-      setBullets(remainingBullets);
 
       gameLoopRef.current = requestAnimationFrame(gameLoop);
     };

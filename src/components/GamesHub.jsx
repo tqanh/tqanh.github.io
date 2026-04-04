@@ -6,7 +6,7 @@ function GamesHub() {
     {
       id: 'voice-invaders',
       title: 'Voice Invaders',
-      description: 'Destroy falling words with your voice! Speak the word correctly to shoot it down before it hits the bottom.',
+      description: 'Destroy falling targets with your voice! Speak the code word to shoot them down before they hit the bottom.',
       icon: (
         <svg className="w-16 h-16 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -20,8 +20,8 @@ function GamesHub() {
     },
     {
       id: 'coming-soon-1',
-      title: 'Word Scramble',
-      description: 'Unscramble letters to form correct TOEIC words against the clock.',
+      title: 'Code Breaker',
+      description: 'Solve the code puzzles before time runs out.',
       icon: (
         <svg className="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -33,8 +33,8 @@ function GamesHub() {
     },
     {
       id: 'coming-soon-2',
-      title: 'Listening Challenge',
-      description: 'Listen and type what you hear. Test your listening comprehension.',
+      title: 'Memory Match',
+      description: 'Test your memory by matching pairs in the shortest time.',
       icon: (
         <svg className="w-16 h-16 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -71,7 +71,7 @@ function GamesHub() {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4">Choose Your Game</h2>
           <p className="text-gray-400 text-lg">
-            Learn English while having fun! More games coming soon.
+            Fun games powered by AI voice recognition. More coming soon!
           </p>
         </div>
 
@@ -154,7 +154,7 @@ function GamesHub() {
       {/* Footer */}
       <div className="container mx-auto px-4 py-8 max-w-6xl border-t border-gray-800 mt-8">
         <div className="text-center text-gray-500 text-sm">
-          <p>More educational games will be added soon!</p>
+          <p>More fun games will be added soon!</p>
         </div>
       </div>
     </div>

@@ -27,48 +27,32 @@ function VoiceInvaders() {
   const SPAWN_RATE = 3000; // ms between new words
   const SIMILARITY_THRESHOLD = 80; // %
 
-  // Load vocabulary data
+  // Load game targets (simple words, not English learning)
   useEffect(() => {
-    fetch('./src/data/daily-vocab.json')
-      .then(res => res.json())
-      .then(data => {
-        const words = data.words || [];
-        setVocabData(words);
-        // Also load from extended vocab if available
-        if (words.length < 50) {
-          // Add more TOEIC words for the game
-          const extraWords = [
-            { word: "negotiate", type: "verb", meaning: "to discuss something" },
-            { word: "contract", type: "noun", meaning: "a legal agreement" },
-            { word: "revenue", type: "noun", meaning: "income from business" },
-            { word: "deadline", type: "noun", meaning: "time limit for work" },
-            { word: "budget", type: "noun", meaning: "planned spending" },
-            { word: "strategy", type: "noun", meaning: "careful plan" },
-            { word: "client", type: "noun", meaning: "customer" },
-            { word: "profit", type: "noun", meaning: "money gained" },
-            { word: "expense", type: "noun", meaning: "money spent" },
-            { word: "meeting", type: "noun", meaning: "business gathering" },
-            { word: "report", type: "noun", meaning: "written account" },
-            { word: "analysis", type: "noun", meaning: "detailed examination" },
-            { word: "target", type: "noun", meaning: "goal to achieve" },
-            { word: "increase", type: "verb", meaning: "to become bigger" },
-            { word: "decrease", type: "verb", meaning: "to become smaller" },
-            { word: "schedule", type: "noun", meaning: "planned time" },
-            { word: "invoice", type: "noun", meaning: "bill for payment" },
-            { word: "shipment", type: "noun", meaning: "goods being sent" },
-            { word: "inventory", type: "noun", meaning: "list of goods" },
-            { word: "purchase", type: "noun", meaning: "act of buying" }
-          ];
-          setVocabData(prev => [...prev, ...extraWords]);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load vocab data:', err);
-        setVocabData([
-          { word: "accomplish", type: "verb", meaning: "to succeed" },
-          { word: "achievement", type: "noun", meaning: "success" },
-        ]);
-      });
+    // Use simple common words for the voice game - no English learning context
+    const gameWords = [
+      { word: "red", type: "color", meaning: "color" },
+      { word: "blue", type: "color", meaning: "color" },
+      { word: "green", type: "color", meaning: "color" },
+      { word: "yellow", type: "color", meaning: "color" },
+      { word: "up", type: "direction", meaning: "direction" },
+      { word: "down", type: "direction", meaning: "direction" },
+      { word: "left", type: "direction", meaning: "direction" },
+      { word: "right", type: "direction", meaning: "direction" },
+      { word: "start", type: "action", meaning: "action" },
+      { word: "stop", type: "action", meaning: "action" },
+      { word: "go", type: "action", meaning: "action" },
+      { word: "fire", type: "action", meaning: "action" },
+      { word: "one", type: "number", meaning: "number" },
+      { word: "two", type: "number", meaning: "number" },
+      { word: "three", type: "number", meaning: "number" },
+      { word: "alpha", type: "code", meaning: "code" },
+      { word: "beta", type: "code", meaning: "code" },
+      { word: "gamma", type: "code", meaning: "code" },
+      { word: "delta", type: "code", meaning: "code" },
+      { word: "omega", type: "code", meaning: "code" }
+    ];
+    setVocabData(gameWords);
   }, []);
 
   // Initialize AI Worker
@@ -356,7 +340,7 @@ function VoiceInvaders() {
                 <h2 className="text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                   Voice Invaders
                 </h2>
-                <p className="text-gray-400 mb-6">Speak to destroy the falling words!</p>
+                <p className="text-gray-400 mb-6">Speak the code words to destroy the targets!</p>
                 <button
                   onClick={startGame}
                   className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:scale-105 transition-transform"
@@ -365,7 +349,7 @@ function VoiceInvaders() {
                 </button>
                 <div className="mt-6 text-sm text-gray-500">
                   <p>Hold the microphone button to speak</p>
-                  <p>Words must match 80% to destroy</p>
+                  <p>Speak the target code to destroy it</p>
                 </div>
               </div>
             </div>
@@ -466,7 +450,7 @@ function VoiceInvaders() {
 
         {gameState === 'playing' && (
           <p className="text-center mt-4 text-gray-400 text-sm">
-            Hold the microphone button and speak the word to destroy it!
+            Hold the microphone button and speak the code word to destroy the target!
           </p>
         )}
       </div>

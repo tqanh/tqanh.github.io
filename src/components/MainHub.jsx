@@ -17,9 +17,9 @@ function MainHub() {
       status: 'available'
     },
     {
-      id: 'game',
-      title: 'Voice Invaders',
-      description: 'Destroy words with your voice! Speak to shoot falling words.',
+      id: 'games',
+      title: 'Games Hub',
+      description: 'Play English learning games. Destroy words with your voice!',
       icon: (
         <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -29,7 +29,7 @@ function MainHub() {
       color: 'bg-purple-50 hover:bg-purple-100',
       buttonColor: 'bg-purple-600 hover:bg-purple-700',
       status: 'available',
-      badge: 'AI Game'
+      badge: 'Games'
     },
     {
       id: 'coming-soon',
@@ -115,6 +115,14 @@ function MainHub() {
                         <span>Launch</span>
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </>
+                    ) : app.id === 'games' ? (
+                      <>
+                        <span>Enter</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </>
                     ) : (

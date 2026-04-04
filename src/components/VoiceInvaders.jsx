@@ -283,11 +283,11 @@ function VoiceInvaders() {
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-6xl">
           <div className="flex items-center gap-4">
-            <Link to="/" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm">
+            <Link to="/games" className="text-gray-400 hover:text-white flex items-center gap-1 text-sm">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Back to Hub
+              Back to Games
             </Link>
           </div>
           <h1 className="text-xl font-bold text-purple-400">Voice Invaders</h1>
@@ -421,8 +421,8 @@ function VoiceInvaders() {
                   PLAY AGAIN
                 </button>
                 <div className="mt-4">
-                  <Link to="/" className="text-gray-400 hover:text-white text-sm">
-                    ← Back to Hub
+                  <Link to="/games" className="text-gray-400 hover:text-white text-sm">
+                    ← Back to Games
                   </Link>
                 </div>
               </div>

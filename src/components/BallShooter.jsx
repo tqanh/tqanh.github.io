@@ -11,12 +11,18 @@ function BallShooter() {
   const [bullets, setBullets] = useState([]);
   const [shooterPosition, setShooterPosition] = useState(50); // percentage
   
-  // Refs
-  const gameLoopRef = useRef(null);
-  const ballIdCounter = useRef(0);
-  const bulletIdCounter = useRef(0);
-  const gameAreaRef = useRef(null);
-  const keysPressed = useRef({});
+  // Refs for game state to avoid nested setState issues
+  const ballsRef = useRef([]);
+  const bulletsRef = useRef([]);
+  
+  // Sync refs with state
+  useEffect(() => {
+    ballsRef.current = balls;
+  }, [balls]);
+  
+  useEffect(() => {
+    bulletsRef.current = bullets;
+  }, [bullets]);
   
   // Game constants
   const BALL_SPEED_BASE = 1;
@@ -136,45 +142,41 @@ function BallShooter() {
         })).filter(bullet => bullet.y > -10)
       );
 
-      // Check collisions and update together
-      setBalls(prevBalls => {
-        const remainingBalls = [];
-        const hitBallIds = new Set();
-        
-        setBullets(prevBullets => {
-          const remainingBullets = [...prevBullets];
-          let newScore = 0;
+      // Check collisions and update together using refs
+      const currentBalls = ballsRef.current;
+      const currentBullets = bulletsRef.current;
+      
+      const remainingBalls = [];
+      const remainingBullets = [...currentBullets];
+      let newScore = 0;
+      
+      currentBalls.forEach(ball => {
+        let hit = false;
+        for (let i = remainingBullets.length - 1; i >= 0; i--) {
+          const bullet = remainingBullets[i];
+          const dx = (ball.x - bullet.x);
+          const dy = (ball.y - bullet.y);
+          const distance = Math.sqrt(dx * dx + dy * dy);
           
-          prevBalls.forEach(ball => {
-            let hit = false;
-            for (let i = remainingBullets.length - 1; i >= 0; i--) {
-              const bullet = remainingBullets[i];
-              const dx = (ball.x - bullet.x);
-              const dy = (ball.y - bullet.y);
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              
-              if (distance < ball.radius / 5 + 2) {
-                hit = true;
-                remainingBullets.splice(i, 1);
-                newScore += 10;
-                break;
-              }
-            }
-            
-            if (!hit) {
-              remainingBalls.push(ball);
-            }
-          });
-          
-          if (newScore > 0) {
-            setScore(s => s + newScore);
+          if (distance < ball.radius / 5 + 2) {
+            hit = true;
+            remainingBullets.splice(i, 1);
+            newScore += 10;
+            break;
           }
-          
-          return remainingBullets;
-        });
+        }
         
-        return remainingBalls;
+        if (!hit) {
+          remainingBalls.push(ball);
+        }
       });
+      
+      if (newScore > 0) {
+        setScore(s => s + newScore);
+      }
+      
+      setBalls(remainingBalls);
+      setBullets(remainingBullets);
 
       gameLoopRef.current = requestAnimationFrame(gameLoop);
     };

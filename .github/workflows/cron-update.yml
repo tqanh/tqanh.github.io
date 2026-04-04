@@ -1,0 +1,40 @@
+name: Daily Vocabulary Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run at 00:00 UTC every day
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-vocab:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Run vocabulary update script
+        run: node scripts/update-vocab.js
+        
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet src/data/daily-vocab.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/data/daily-vocab.json
+          git commit -m "Update daily TOEIC vocabulary - $(date +%Y-%m-%d)"
+          git push

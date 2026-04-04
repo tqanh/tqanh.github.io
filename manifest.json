@@ -1,0 +1,16 @@
+{
+  "name": "Daily TOEIC AI",
+  "short_name": "TOEIC AI",
+  "description": "Learn TOEIC vocabulary with AI-powered pronunciation checking",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "./vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "date": "2026-04-04",
+  "count": 10,
+  "words": [
+    {
+      "word": "policy",
+      "type": "noun",
+      "ipa": "/ˈpɒləsi/",
+      "meaning": "a course of action adopted by an organization",
+      "example": "The company has a strict no-smoking policy."
+    },
+    {
+      "word": "delivery",
+      "type": "noun",
+      "ipa": "/dɪˈlɪvəri/",
+      "meaning": "the action of delivering goods",
+      "example": "We expect the delivery by tomorrow morning."
+    },
+    {
+      "word": "fee",
+      "type": "noun",
+      "ipa": "/fiː/",
+      "meaning": "a payment for professional services",
+      "example": "There is a small fee for processing the application."
+    },
+    {
+      "word": "announcement",
+      "type": "noun",
+      "ipa": "/əˈnaʊnsmənt/",
+      "meaning": "a formal public statement",
+      "example": "The CEO will make an important announcement tomorrow."
+    },
+    {
+      "word": "salary",
+      "type": "noun",
+      "ipa": "/ˈsæləri/",
+      "meaning": "a fixed regular payment",
+      "example": "The position offers a competitive salary."
+    },
+    {
+      "word": "resign",
+      "type": "verb",
+      "ipa": "/rɪˈzaɪn/",
+      "meaning": "to voluntarily leave a job",
+      "example": "He decided to resign after ten years."
+    },
+    {
+      "word": "wage",
+      "type": "noun",
+      "ipa": "/weɪdʒ/",
+      "meaning": "a fixed regular payment for work",
+      "example": "The minimum wage has increased this year."
+    },
+    {
+      "word": "raise",
+      "type": "verb",
+      "ipa": "/reɪz/",
+      "meaning": "to lift or move to a higher position",
+      "example": "We need to raise funds for the project."
+    },
+    {
+      "word": "profit",
+      "type": "noun",
+      "ipa": "/ˈprɒfɪt/",
+      "meaning": "financial gain",
+      "example": "The company reported record profits this year."
+    },
+    {
+      "word": "liability",
+      "type": "noun",
+      "ipa": "/ˌlaɪəˈbɪləti/",
+      "meaning": "a legal responsibility",
+      "example": "The company has limited liability protection."
+    }
+  ]
+}

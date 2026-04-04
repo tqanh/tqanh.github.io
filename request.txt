@@ -1,0 +1,72 @@
+PROJECT SPECIFICATION: SMART TOEIC EDGE AI APP
+1. OVERVIEW
+Build a static web application hosted on GitHub Pages that helps users learn TOEIC vocabulary.
+
+Automation: Use GitHub Actions to update vocabulary daily.
+
+AI Core: Use Edge AI (Transformers.js) for offline Speech-to-Text to check user pronunciation.
+
+Tech Stack: Vite, React, Tailwind CSS, @xenova/transformers.
+
+2. SYSTEM ARCHITECTURE
+A. Backend Automation (GitHub Actions)
+Script: scripts/update-vocab.js (Node.js).
+
+Task: - Fetch or generate a list of 10 TOEIC words (Word, Type, IPA, Meaning, Example Sentence).
+
+Save the output to src/data/daily-vocab.json.
+
+Workflow: .github/workflows/cron-update.yml.
+
+Run every day at 00:00 UTC.
+
+Automatically commit and push the updated daily-vocab.json to the repository.
+
+B. Frontend & Edge AI (React)
+Data Loading: Fetch daily-vocab.json on page load.
+
+AI Worker: Implement a Web Worker (src/worker/speechWorker.js) to handle Whisper-tiny model.
+
+Inference: - Use device: 'webgpu' with a fallback to wasm.
+
+Cache the model using the Cache API for offline use.
+
+Logic: - Compare the AI-transcribed text with the target word.
+
+Calculate a similarity score (e.g., Levenshtein distance) to give a Pass/Fail result.
+
+3. COMPONENT REQUIREMENTS
+UI/UX (Tailwind CSS)
+Header: Title "Daily TOEIC AI" and a status indicator for the AI Model (Loading/Ready).
+
+Vocab List: A grid of cards. Each card has:
+
+The word & IPA.
+
+A "Speaker" button (using Web Speech API for Text-to-Speech).
+
+A "Microphone" button (Trigger recording & AI processing).
+
+A result badge (Correct/Incorrect).
+
+Progress: A global progress bar showing how many words the user mastered today.
+
+4. DEPLOYMENT CONFIGURATION
+Vite Config: Set base: './' for GitHub Pages compatibility.
+
+PWA (Optional but Recommended): Add a manifest and service worker so the app can be "installed" on mobile.
+
+GitHub Pages: Deployment via GitHub Actions (target branch: gh-pages).
+
+5. EXECUTION STEPS FOR WINDSURF
+Initialize the Vite + React + Tailwind project.
+
+Create the Node.js scraping/generating script and the GitHub Action YAML.
+
+Setup the Web Worker for Transformers.js (Whisper-tiny).
+
+Build the React components (Card, Recorder, Progress).
+
+Add the similarity logic to compare "Spoken text" vs "Target text".
+
+Ensure the build is optimized for GitHub Pages (handling SharedArrayBuffer and Base path).

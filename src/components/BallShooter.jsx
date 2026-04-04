@@ -14,6 +14,11 @@ function BallShooter() {
   // Refs for game state to avoid nested setState issues
   const ballsRef = useRef([]);
   const bulletsRef = useRef([]);
+  const gameLoopRef = useRef(null);
+  const ballIdCounter = useRef(0);
+  const bulletIdCounter = useRef(0);
+  const gameAreaRef = useRef(null);
+  const keysPressed = useRef({});
   
   // Sync refs with state
   useEffect(() => {

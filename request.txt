@@ -1,0 +1,81 @@
+PROJECT SPECIFICATION: SMART TOEIC EDGE AI APP & HUB (UPDATED)
+1. OVERVIEW (UPDATED)
+Build a static web application hosted on GitHub Pages acting as an "App Hub" for English learners.
+
+Architecture: A Main Dashboard with routing to multiple sub-applications.
+
+Core Apps: 1.  Daily TOEIC: Vocabulary learning with AI pronunciation check.
+2.  Voice Invaders (Game): An interactive gamified experience using offline Speech-to-Text.
+
+AI Core: Use Edge AI (Transformers.js) for offline Speech-to-Text (Whisper) and Semantic Search (MiniLM).
+
+Tech Stack: Vite, React, Tailwind CSS, react-router-dom (HashRouter), @xenova/transformers.
+
+2. SYSTEM ARCHITECTURE (UPDATED)
+A. Routing & Hub Management (React Router)
+
+Requirement: Must use HashRouter instead of BrowserRouter to prevent 404 errors on GitHub Pages when users refresh.
+
+Routes:
+
+/: Main Hub (Dashboard with app cards).
+
+/toeic: The Daily TOEIC Learning module.
+
+/game: The new Voice Invaders Game module.
+
+(Phần B, C giữ nguyên như cũ: Backend Automation & Edge AI Worker)
+
+3. NEW MODULE: MAIN HUB UI (BẢNG CHỌN CHÍNH)
+
+Hero Section: A welcoming banner "Smart English Edge Hub".
+
+App Grid: A modern grid layout with cards for each feature.
+
+Card 1 (Daily TOEIC): Icon, description ("Learn 10 words daily"), and a "Launch" button.
+
+Card 2 (Voice Invaders Game): Game icon, description ("Destroy words with your voice"), and a "Play" button.
+
+Card 3 (Coming Soon): A locked card to show scalability for future updates.
+
+4. NEW MODULE: GAME "VOICE INVADERS"
+
+Concept: TOEIC words drop from the top of the screen to the bottom. The user must speak the word correctly to destroy it before it hits the bottom.
+
+UI/UX:
+
+Game Canvas/Area: Built with React state (or simple HTML5 Canvas) where word components slowly move down (using requestAnimationFrame or CSS animations).
+
+Controls: A giant "Hold to Speak" button at the bottom.
+
+HUD: Score counter, Lives (hearts), and Current Streak.
+
+Logic & AI Integration:
+
+Reuse Web Worker: Use the existing src/worker/speechWorker.js (Whisper-tiny).
+
+Mechanic: When the user speaks, the transcribed text is compared (using Levenshtein distance) against the lowest currently falling word.
+
+Action: If similarity > 80%, the word explodes (CSS animation), score +10. If the word hits the bottom, Lives -1.
+
+Data Source: Randomly pick words from daily-vocab.json or a larger static JSON bank.
+
+5. DEPLOYMENT CONFIGURATION (UPDATED)
+
+Vite Config: Ensure base: './' is set.
+
+Router: Strictly enforce HashRouter in the entry file (main.jsx/index.jsx).
+
+6. EXECUTION STEPS FOR WINDSURF (UPDATED)
+
+Initialize the project and setup React Router (HashRouter).
+
+Build the Main Hub UI (/) with navigation cards.
+
+Migrate the existing TOEIC logic into its own route (/toeic).
+
+Setup the Game Engine route (/game) with CSS animations for falling words.
+
+Connect the existing speechWorker to the Game Engine to handle voice commands as "bullets".
+
+(Phần 7: Local Vector Search RAG giữ nguyên như cũ)

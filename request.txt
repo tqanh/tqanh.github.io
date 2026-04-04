@@ -70,3 +70,21 @@ Build the React components (Card, Recorder, Progress).
 Add the similarity logic to compare "Spoken text" vs "Target text".
 
 Ensure the build is optimized for GitHub Pages (handling SharedArrayBuffer and Base path).
+
+6. "THE ULTIMATE FEATURE": LOCAL VECTOR SEARCH (RAG)
+
+Objective: Add an advanced "Smart Search" tab using semantic vector search directly in the browser.
+
+Tech Stack: > - @xenova/transformers (Model: Xenova/all-MiniLM-L6-v2 for feature extraction/embeddings).
+
+Use basic IndexedDB to store the text chunks and their vector arrays.
+
+Requirements:
+
+Create a function to generate embeddings for the 10 daily TOEIC words + their meaning/sentences.
+
+Build a search bar where the user can search by meaning or context (e.g., typing "a machine that keeps food cold" should return the word "Refrigerator" based on vector similarity, not exact text match).
+
+Calculate cosine similarity between the search query embedding and the stored database to display the top 3 closest TOEIC words.
+
+All computations must run in a background Web Worker.

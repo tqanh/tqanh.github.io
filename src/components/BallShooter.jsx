@@ -136,12 +136,14 @@ function BallShooter() {
         })).filter(bullet => bullet.y > -10)
       );
 
-      // Check collisions
+      // Check collisions and update together
       setBalls(prevBalls => {
+        const remainingBalls = [];
+        const hitBallIds = new Set();
+        
         setBullets(prevBullets => {
-          let newScore = 0;
-          const remainingBalls = [];
           const remainingBullets = [...prevBullets];
+          let newScore = 0;
           
           prevBalls.forEach(ball => {
             let hit = false;

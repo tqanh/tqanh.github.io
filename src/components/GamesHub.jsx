@@ -4,40 +4,47 @@ import { Link } from 'react-router-dom';
 function GamesHub() {
   const games = [
     {
-      id: 'voice-invaders',
-      title: 'Voice Invaders',
-      description: 'Destroy falling targets with your voice! Speak the code word to shoot them down before they hit the bottom.',
+      id: 'ball-shooter',
+      title: 'Ball Shooter',
+      description: 'Shoot falling balls before they hit the bottom! Classic arcade action.',
       icon: (
-        <svg className="w-16 h-16 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <svg className="w-16 h-16 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" strokeWidth={1.5} />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 2v20M2 12h20" />
+          <circle cx="12" cy="12" r="4" fill="currentColor" />
         </svg>
       ),
-      color: 'bg-purple-50 hover:bg-purple-100',
-      buttonColor: 'bg-purple-600 hover:bg-purple-700',
+      color: 'bg-cyan-50 hover:bg-cyan-100',
+      buttonColor: 'bg-cyan-600 hover:bg-cyan-700',
       status: 'available',
-      badge: 'AI Powered'
+      badge: 'Arcade'
     },
     {
       id: 'coming-soon-1',
-      title: 'Code Breaker',
-      description: 'Solve the code puzzles before time runs out.',
+      title: 'Puzzle Blocks',
+      description: 'Stack blocks and clear lines in this classic puzzle game.',
       icon: (
-        <svg className="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        <svg className="w-16 h-16 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" strokeWidth={1.5} rx="1" />
+          <rect x="14" y="3" width="7" height="7" strokeWidth={1.5} rx="1" />
+          <rect x="3" y="14" width="7" height="7" strokeWidth={1.5} rx="1" />
+          <rect x="14" y="14" width="7" height="7" strokeWidth={1.5} rx="1" />
         </svg>
       ),
-      color: 'bg-blue-50',
+      color: 'bg-orange-50',
       buttonColor: 'bg-gray-400 cursor-not-allowed',
       status: 'locked'
     },
     {
       id: 'coming-soon-2',
-      title: 'Memory Match',
-      description: 'Test your memory by matching pairs in the shortest time.',
+      title: 'Snake Challenge',
+      description: 'Grow your snake and avoid walls in this retro classic.',
       icon: (
         <svg className="w-16 h-16 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4h16v16H4z" />
+          <circle cx="8" cy="8" r="2" fill="currentColor" />
+          <circle cx="16" cy="16" r="2" fill="currentColor" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 8h8v8" />
         </svg>
       ),
       color: 'bg-green-50',
@@ -69,9 +76,9 @@ function GamesHub() {
       {/* Hero */}
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4">Choose Your Game</h2>
+          <h2 className="text-4xl font-bold mb-4">Arcade Games</h2>
           <p className="text-gray-400 text-lg">
-            Fun games powered by AI voice recognition. More coming soon!
+            Classic arcade games running entirely in your browser. More coming soon!
           </p>
         </div>
 
@@ -154,7 +161,7 @@ function GamesHub() {
       {/* Footer */}
       <div className="container mx-auto px-4 py-8 max-w-6xl border-t border-gray-800 mt-8">
         <div className="text-center text-gray-500 text-sm">
-          <p>More fun games will be added soon!</p>
+          <p>More arcade games coming soon!</p>
         </div>
       </div>
     </div>

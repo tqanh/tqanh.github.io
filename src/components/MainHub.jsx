@@ -34,7 +34,7 @@ function MainHub() {
     {
       id: 'coming-soon',
       title: 'Coming Soon',
-      description: 'More English learning features are on the way!',
+      description: 'More features are on the way!',
       icon: (
         <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -55,11 +55,11 @@ function MainHub() {
           <div className="text-center">
             <h1 className="text-5xl font-bold text-gray-900 mb-4">
               <span className="bg-gradient-to-r from-toeic-blue to-purple-600 bg-clip-text text-transparent">
-                Smart English Edge Hub
+                Smart Edge Hub
               </span>
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Your AI-powered learning companion. Master English with cutting-edge Edge AI technology.
+              Your AI-powered companion. Explore apps and games running entirely in your browser.
             </p>
             <div className="mt-6 flex items-center justify-center gap-4">
               <span className="px-4 py-2 bg-white rounded-full shadow-md text-sm text-gray-700 flex items-center gap-2">

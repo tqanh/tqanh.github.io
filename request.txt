@@ -1,90 +1,81 @@
-PROJECT SPECIFICATION: SMART TOEIC EDGE AI APP
-1. OVERVIEW
-Build a static web application hosted on GitHub Pages that helps users learn TOEIC vocabulary.
+PROJECT SPECIFICATION: SMART TOEIC EDGE AI APP & HUB (UPDATED)
+1. OVERVIEW (UPDATED)
+Build a static web application hosted on GitHub Pages acting as an "App Hub" for English learners.
 
-Automation: Use GitHub Actions to update vocabulary daily.
+Architecture: A Main Dashboard with routing to multiple sub-applications.
 
-AI Core: Use Edge AI (Transformers.js) for offline Speech-to-Text to check user pronunciation.
+Core Apps: 1.  Daily TOEIC: Vocabulary learning with AI pronunciation check.
+2.  Voice Invaders (Game): An interactive gamified experience using offline Speech-to-Text.
 
-Tech Stack: Vite, React, Tailwind CSS, @xenova/transformers.
+AI Core: Use Edge AI (Transformers.js) for offline Speech-to-Text (Whisper) and Semantic Search (MiniLM).
 
-2. SYSTEM ARCHITECTURE
-A. Backend Automation (GitHub Actions)
-Script: scripts/update-vocab.js (Node.js).
+Tech Stack: Vite, React, Tailwind CSS, react-router-dom (HashRouter), @xenova/transformers.
 
-Task: - Fetch or generate a list of 10 TOEIC words (Word, Type, IPA, Meaning, Example Sentence).
+2. SYSTEM ARCHITECTURE (UPDATED)
+A. Routing & Hub Management (React Router)
 
-Save the output to src/data/daily-vocab.json.
+Requirement: Must use HashRouter instead of BrowserRouter to prevent 404 errors on GitHub Pages when users refresh.
 
-Workflow: .github/workflows/cron-update.yml.
+Routes:
 
-Run every day at 00:00 UTC.
+/: Main Hub (Dashboard with app cards).
 
-Automatically commit and push the updated daily-vocab.json to the repository.
+/toeic: The Daily TOEIC Learning module.
 
-B. Frontend & Edge AI (React)
-Data Loading: Fetch daily-vocab.json on page load.
+/game: The new Voice Invaders Game module.
 
-AI Worker: Implement a Web Worker (src/worker/speechWorker.js) to handle Whisper-tiny model.
+(Phần B, C giữ nguyên như cũ: Backend Automation & Edge AI Worker)
 
-Inference: - Use device: 'webgpu' with a fallback to wasm.
+3. NEW MODULE: MAIN HUB UI (BẢNG CHỌN CHÍNH)
 
-Cache the model using the Cache API for offline use.
+Hero Section: A welcoming banner "Smart English Edge Hub".
 
-Logic: - Compare the AI-transcribed text with the target word.
+App Grid: A modern grid layout with cards for each feature.
 
-Calculate a similarity score (e.g., Levenshtein distance) to give a Pass/Fail result.
+Card 1 (Daily TOEIC): Icon, description ("Learn 10 words daily"), and a "Launch" button.
 
-3. COMPONENT REQUIREMENTS
-UI/UX (Tailwind CSS)
-Header: Title "Daily TOEIC AI" and a status indicator for the AI Model (Loading/Ready).
+Card 2 (Voice Invaders Game): Game icon, description ("Destroy words with your voice"), and a "Play" button.
 
-Vocab List: A grid of cards. Each card has:
+Card 3 (Coming Soon): A locked card to show scalability for future updates.
 
-The word & IPA.
+4. NEW MODULE: GAME "VOICE INVADERS"
 
-A "Speaker" button (using Web Speech API for Text-to-Speech).
+Concept: TOEIC words drop from the top of the screen to the bottom. The user must speak the word correctly to destroy it before it hits the bottom.
 
-A "Microphone" button (Trigger recording & AI processing).
+UI/UX:
 
-A result badge (Correct/Incorrect).
+Game Canvas/Area: Built with React state (or simple HTML5 Canvas) where word components slowly move down (using requestAnimationFrame or CSS animations).
 
-Progress: A global progress bar showing how many words the user mastered today.
+Controls: A giant "Hold to Speak" button at the bottom.
 
-4. DEPLOYMENT CONFIGURATION
-Vite Config: Set base: './' for GitHub Pages compatibility.
+HUD: Score counter, Lives (hearts), and Current Streak.
 
-PWA (Optional but Recommended): Add a manifest and service worker so the app can be "installed" on mobile.
+Logic & AI Integration:
 
-GitHub Pages: Deployment via GitHub Actions (target branch: gh-pages).
+Reuse Web Worker: Use the existing src/worker/speechWorker.js (Whisper-tiny).
 
-5. EXECUTION STEPS FOR WINDSURF
-Initialize the Vite + React + Tailwind project.
+Mechanic: When the user speaks, the transcribed text is compared (using Levenshtein distance) against the lowest currently falling word.
 
-Create the Node.js scraping/generating script and the GitHub Action YAML.
+Action: If similarity > 80%, the word explodes (CSS animation), score +10. If the word hits the bottom, Lives -1.
 
-Setup the Web Worker for Transformers.js (Whisper-tiny).
+Data Source: Randomly pick words from daily-vocab.json or a larger static JSON bank.
 
-Build the React components (Card, Recorder, Progress).
+5. DEPLOYMENT CONFIGURATION (UPDATED)
 
-Add the similarity logic to compare "Spoken text" vs "Target text".
+Vite Config: Ensure base: './' is set.
 
-Ensure the build is optimized for GitHub Pages (handling SharedArrayBuffer and Base path).
+Router: Strictly enforce HashRouter in the entry file (main.jsx/index.jsx).
 
-6. "THE ULTIMATE FEATURE": LOCAL VECTOR SEARCH (RAG)
+6. EXECUTION STEPS FOR WINDSURF (UPDATED)
 
-Objective: Add an advanced "Smart Search" tab using semantic vector search directly in the browser.
+Initialize the project and setup React Router (HashRouter).
 
-Tech Stack: > - @xenova/transformers (Model: Xenova/all-MiniLM-L6-v2 for feature extraction/embeddings).
+Build the Main Hub UI (/) with navigation cards.
 
-Use basic IndexedDB to store the text chunks and their vector arrays.
+Migrate the existing TOEIC logic into its own route (/toeic).
 
-Requirements:
+Setup the Game Engine route (/game) with CSS animations for falling words.
 
-Create a function to generate embeddings for the 10 daily TOEIC words + their meaning/sentences.
+Connect the existing speechWorker to the Game Engine to handle voice commands as "bullets".
 
-Build a search bar where the user can search by meaning or context (e.g., typing "a machine that keeps food cold" should return the word "Refrigerator" based on vector similarity, not exact text match).
-
-Calculate cosine similarity between the search query embedding and the stored database to display the top 3 closest TOEIC words.
-
-All computations must run in a background Web Worker.
+(Phần 7: Local Vector Search RAG giữ nguyên như cũ)
